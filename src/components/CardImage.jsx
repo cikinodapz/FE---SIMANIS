@@ -1,27 +1,44 @@
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit2, Trash2, Eye, Check } from "lucide-react";
 import Button from "./Button";
 
-const CardImage = ({ image, label }) => {
+const CardImage = ({ image, label, onDelete }) => {
   return (
-    <a
-      className="flex flex-col bg-white border shadow-sm rounded-xl hover:shadow-lg focus:outline-none focus:shadow-lg transition"
-      href="#"
-    >
-      {/* Membungkus gambar dalam div dengan ukuran tetap */}
-      <div className="w-full h-48 overflow-hidden flex justify-center items-center bg-gray-100 rounded-t-xl">
+    <div className="group bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300">
+      <div className="w-full h-48 overflow-hidden rounded-t-xl">
         {image}
       </div>
-      <div className="p-4 md:p-5">
-        <h3 className="text-lg text-center font-bold text-gray-800">{label}</h3>
-        <div className="flex items-center justify-center space-x-3 mt-3">
-          <Edit className="w-5 h-5 text-yellow-600 hover:text-yellow-400 cursor-pointer bg-white rounded-lg shadow-lg" />
-          <Trash2 className="w-5 h-5 text-red-600 hover:text-red-400 cursor-pointer" />
+
+      <div className="p-5">
+        {label}
+        
+        <div className="space-y-3 mt-4">
+          <div className="flex items-center justify-center gap-4">
+            <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200">
+              <Edit2 className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+
+            <button 
+              onClick={onDelete}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-200"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete</span>
+            </button>
+          </div>
+
+          <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 transition-all duration-200">
+            <Check className="w-4 h-4" />
+            <span>Apply Template</span>
+          </button>
         </div>
-        <div className="mt-5 flex justify-center font-medium">
-          <Button variant="teal" label={"Saat ini"} />
-        </div>
+
+        <button className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <Eye className="w-4 h-4" />
+          <span>Preview</span>
+        </button>
       </div>
-    </a>
+    </div>
   );
 };
 

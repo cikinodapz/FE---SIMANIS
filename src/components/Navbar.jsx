@@ -9,7 +9,7 @@ const Navbar = ({ user }) => {
           {/* Brand Section */}
           <a
             className="flex items-center gap-x-2 text-xl font-semibold text-white focus:outline-none focus:opacity-80"
-            href="/home"
+            href="/landing"
             aria-label="Brand"
           >
             <img
