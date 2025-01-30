@@ -43,7 +43,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-biodata",
+        "http://localhost:3000/pegawai/list-peserta",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -80,7 +80,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-tugas",
+        "http://localhost:3000/pegawai/list-tugas",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,7 +136,7 @@ const FormTugas = () => {
 
       if (isEdit) {
         await axios.put(
-          `http://localhost:3000/admin/edit-tugas/${editTugasId}`,
+          `http://localhost:3000/pegawai/edit-tugas/${editTugasId}`,
           tugasData,
           {
             headers: {
@@ -163,7 +163,7 @@ const FormTugas = () => {
         }
 
         await axios.post(
-          `http://localhost:3000/admin/add-tugas/${selectedPesertaId}`,
+          `http://localhost:3000/pegawai/add-tugas/${selectedPesertaId}`,
           tugasData,
           {
             headers: {
@@ -235,11 +235,14 @@ const FormTugas = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("accessToken");
-          await axios.delete(`http://localhost:3000/admin/delete-tugas/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          await axios.delete(
+            `http://localhost:3000/pegawai/delete-tugas/${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
           Swal.fire({
             icon: "success",
@@ -266,18 +269,16 @@ const FormTugas = () => {
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
 
   const filteredTugas = rekapanTugas
-  .filter((tugas) =>
-    tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
-  
-  )
-  .sort((a, b) => {
-    // Mengambil nama peserta, jika null/undefined diganti dengan string kosong
-    const namaA = a.peserta?.nama || '';
-    const namaB = b.peserta?.nama || '';
-    // Mengurutkan dengan localeCompare untuk handle huruf lokal dengan benar
-    return namaA.localeCompare(namaB);
-  });
-
+    .filter((tugas) =>
+      tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Mengambil nama peserta, jika null/undefined diganti dengan string kosong
+      const namaA = a.peserta?.nama || "";
+      const namaB = b.peserta?.nama || "";
+      // Mengurutkan dengan localeCompare untuk handle huruf lokal dengan benar
+      return namaA.localeCompare(namaB);
+    });
   return (
     <div className="flex shadow max-w-[95rem] mx-auto">
       <Sidebar />
@@ -355,8 +356,9 @@ const FormTugas = () => {
                     <td className="border border-gray-300 p-2 text-sm">
                       {tugas.pegawai?.nama || "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-sm"> 
-                      {tugas.deskripsi} </td>
+                    <td className="border border-gray-300 p-2 text-sm">
+                      {tugas.deskripsi}{" "}
+                    </td>
                     <td className="border border-gray-300 p-2 text-sm">
                       {tugas.catatan}
                     </td>

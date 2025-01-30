@@ -40,7 +40,7 @@ const LoginPage = () => {
   
       if (response.data) {
         localStorage.setItem("accessToken", response.data.accessToken);
-        localStorage.setItem("role", response.data.user?.role); 
+        localStorage.setItem("role", response.data.user?.role);
   
         Swal.fire({
           icon: "success",
@@ -97,22 +97,16 @@ const LoginPage = () => {
             }, 1000);
           },
         }).then(() => {
-          const role = response.data.user?.role;
-  
-          switch (role) {
-            case 'Admin':
-              navigate('/admin/dashboard');
-              break;
-            case 'Pegawai':
-              navigate('/pegawai/dashboard');
-              break;
-            case 'Peserta':
-              navigate('/biodata');
-              break;
-            default:
-              navigate('/dashboard');
+          const userRole = localStorage.getItem('role');
+          if (userRole === 'User') {
+            navigate('/biodata');
+          } else if (userRole === 'Pegawai') {
+            navigate('/form-tugas-pegawai');
+          } else {
+            navigate('/dashboard');
           }
         });
+        
       }
     } catch (error) {
       Swal.fire({
@@ -135,7 +129,6 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <div
@@ -144,11 +137,7 @@ const LoginPage = () => {
     >
       <div className="backdrop-blur-md bg-white/15 rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-6">
-          <img
-            src={logo}
-            alt="Logo"
-            className="h-16 w-16 object-contain"
-          />
+          <img src={logo} alt="Logo" className="h-16 w-16 object-contain" />
           <div className="ml-4">
             <h1 className="text-2xl font-bold text-white italic">
               Badan Pusat Statistik
@@ -169,10 +158,10 @@ const LoginPage = () => {
             >
               Email
             </label>
-            <Input 
-              type="email" 
-              id="email" 
-              placeholder="Enter your email" 
+            <Input
+              type="email"
+              id="email"
+              placeholder="Enter your email"
               value={formData.email}
               onChange={handleInputChange}
               required

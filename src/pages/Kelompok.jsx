@@ -135,10 +135,10 @@ const Kelompok = () => {
     }
   };
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (id,nama_ketua) => {
     const result = await Swal.fire({
       title: 'Konfirmasi Persetujuan',
-      html: `Apakah Anda yakin ingin menyetujui kelompok dengan ketua <b>${id}</b>?`,
+      html: `Apakah Anda yakin ingin menyetujui kelompok dengan ketua <b>${nama_ketua}</b>?`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#14b8a6',
@@ -178,10 +178,10 @@ const Kelompok = () => {
     }
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id,nama_ketua) => {
     const result = await Swal.fire({
       title: 'Konfirmasi Penolakan',
-      html: `Apakah Anda yakin ingin menolak kelompok dengan ketua <b>${id}</b>?`,
+      html: `Apakah Anda yakin ingin menolak kelompok dengan ketua <b>${nama_ketua}</b>?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -324,14 +324,14 @@ const Kelompok = () => {
                           {kelompok.status !== "Diterima" && kelompok.status !== "Ditolak" && (
                             <>
                               <button
-                                onClick={() => handleApprove(kelompok.id)}
+                                onClick={() => handleApprove(kelompok.id,kelompok.nama_ketua)}
                                 className="bg-teal-500 p-2 rounded-lg hover:bg-green-600 transition-colors"
                                 title="Setujui"
                               >
                                 <Check className="text-white h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleReject(kelompok.id)}
+                                onClick={() => handleReject(kelompok.id,kelompok.nama_ketua)}
                                 className="bg-red-500 p-2 rounded-lg hover:bg-red-600 transition-colors"
                                 title="Tolak"
                               >
