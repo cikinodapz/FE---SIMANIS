@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import {
   LogOut,
   ClipboardList,
@@ -10,15 +11,20 @@ import {
   ChartColumnBig,
   Settings,
   Award,
+  IdCard,
+  User,
+  FileText
 } from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const token = localStorage.getItem("accessToken");
+  const decodedToken = token ? jwtDecode(token) : null;
+  const userRole = decodedToken ? decodedToken.role : null;
 
   const handleLogout = async () => {
     try {
-      // Konfigurasi axios untuk mengirim cookies
       const response = await axios.post(
         "http://localhost:3000/auth/logout",
         {},
@@ -26,23 +32,18 @@ const Sidebar = () => {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-            // Jika menggunakan access token di header
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
         }
       );
       
       if (response.status === 200) {
-        // Hapus token dari localStorage
         localStorage.removeItem('accessToken');
-        
-        // Redirect ke halaman login
         navigate('/login');
       }
     } catch (error) {
       console.error("Logout Error:", error);
       
-      // Jika error karena token expired, tetap logout di client
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         localStorage.removeItem('accessToken');
         navigate('/login');
@@ -52,13 +53,13 @@ const Sidebar = () => {
     }
   };
 
-  const menuItems = [
+  const adminMenuItems = [
     { title: "Dashboard", icon: ChartColumnBig, route: "/dashboard" }, 
     { title: "Kelompok", icon: ClipboardList, route: "/list-pendaftar" },
     { title: "Peserta", icon: Users, route: "/list-peserta-magang" },
     { title: "Penugasan", icon: Briefcase, route: "/form-tugas" },
-    { title: "Template Sertifikat", icon: Award, route: "/sertifikat" },
-    { title: "Pengelolaan Akun", icon: Settings, route: "/admin-management" }, 
+    { title: "Template Sertifikat", icon: FileText, route: "/sertifikat" },
+    { title: "Pengelolaan Akun", icon: Settings, route: "/admin-management" },
     { 
       title: "Logout", 
       icon: LogOut, 
@@ -66,6 +67,44 @@ const Sidebar = () => {
       onClick: handleLogout
     }
   ];
+
+  const pesertaMenuItems = [
+    { title: "Biodata", icon: User, route: "/biodata" },
+    { title: "Tugas", icon: ClipboardList, route: "/daftarTugas" },
+    { title: "Sertifikat", icon: Award, route: "/sertifikatPeserta" },
+    { 
+      title: "Logout", 
+      icon: LogOut, 
+      route: "/login",
+      onClick: handleLogout
+    }
+  ];
+
+  const pegawaiMenuItems = [
+    { title: "Penugasan", icon: Briefcase, route: "/form-tugas-pegawai" },
+    { 
+      title: "Logout", 
+      icon: LogOut, 
+      route: "/login",
+      onClick: handleLogout
+    }
+  ];
+
+  const getMenuItems = () => {
+    switch(userRole) {
+      case "Admin":
+        return adminMenuItems;
+      case "User":      // Added User role to match the JWT token
+      case "Peserta":   // Keep Peserta for backwards compatibility
+        return pesertaMenuItems;
+      case "Pegawai":
+        return pegawaiMenuItems;
+      default:
+        return [];
+    }
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <div className="fixed top-20 left-0 h-screen bg-white shadow-xl w-72 flex flex-col">
@@ -81,9 +120,11 @@ const Sidebar = () => {
                   <a
                     href={item.route}
                     onClick={(e) => {
+                      e.preventDefault();
                       if (item.onClick) {
-                        e.preventDefault();
                         item.onClick();
+                      } else {
+                        navigate(item.route);
                       }
                     }}
                     className={`flex items-center gap-4 p-3 rounded-lg transition-colors ${
@@ -100,17 +141,6 @@ const Sidebar = () => {
             })}
           </ul>
         </nav>
-      </div>
-
-      {/* Logout Button at the bottom */}
-      <div className="p-4">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-4 w-full text-left p-3 ml-6 hover:text-blue-premier hover:font-bold text-gray-700 rounded-lg transition-colors"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
       </div>
     </div>
   );

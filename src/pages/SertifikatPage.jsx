@@ -9,46 +9,72 @@ import { format } from "date-fns";
 import bps from "../assets/bps.png";
 import Swal from "sweetalert2";
 
-const CardImage = ({ image, label, onDelete, onEdit, onApply }) => {
+const CardImage = ({ image, label, onDelete, onEdit, onApply, isActive }) => {
   return (
-    <div className="group bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300">
-      <div className="w-full h-48 overflow-hidden rounded-t-xl">{image}</div>
+    <div
+      className={`group relative rounded-xl transition-all duration-300 ${
+        isActive
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 p-1 shadow-lg hover:shadow-xl"
+          : "bg-white border border-gray-200 shadow-sm hover:shadow-lg"
+      }`}
+    >
+      <div
+        className={`bg-white rounded-lg overflow-hidden ${
+          isActive ? "p-0.5" : ""
+        }`}
+      >
+        <div className="w-full h-48 overflow-hidden rounded-t-lg">
+          {image}
+          {isActive && (
+            <div className="absolute top-0 right-0 m-2">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500 text-blue-800">
+                <Check className="w-4 h-4 mr-1" />
+                Active
+              </span>
+            </div>
+          )}
+        </div>
 
-      <div className="p-5">
-        {label}
+        <div className="p-5">
+          {label}
 
-        <div className="space-y-3 mt-4">
-          <div className="flex items-center justify-center gap-4">
+          <div className="space-y-3 mt-4">
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200"
+              >
+                <Edit2 className="w-4 h-4" />
+                <span>Edit</span>
+              </button>
+
+              <button
+                onClick={onDelete}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-200"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+
             <button
-              onClick={onEdit}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200"
+              onClick={onApply}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                isActive
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-100"
+              }`}
             >
-              <Edit2 className="w-4 h-4" />
-              <span>Edit</span>
-            </button>
-
-            <button
-              onClick={onDelete}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-200"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
+              <Check className="w-4 h-4" />
+              <span>{isActive ? "Currently Active" : "Apply Template"}</span>
             </button>
           </div>
 
-          <button
-            onClick={onApply}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-          >
-            <Check className="w-4 h-4" />
-            <span>Apply Template</span>
+          <button className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+            <Eye className="w-4 h-4" />
+            <span>Preview</span>
           </button>
         </div>
-
-        <button className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-          <Eye className="w-4 h-4" />
-          <span>Preview</span>
-        </button>
       </div>
     </div>
   );
@@ -408,12 +434,20 @@ const TemplateManagement = () => {
                   Total Template: {templates.length}
                 </p>
               </div>
-              <Button
-                label="Tambah Template"
-                variant="blue"
-                ikon={<Plus />}
+              <button
                 onClick={() => setIsPopupVisible(true)}
-              />
+                className="inline-flex items-center gap-2 px-4 py-2 
+    bg-gradient-to-r from-blue-600 to-blue-500 
+    hover:from-blue-700 hover:to-blue-600 
+    text-white rounded-lg font-medium 
+    shadow-lg shadow-blue-500/30 
+    hover:shadow-blue-600/40 
+    hover:scale-105 
+    transition-all duration-300"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Template</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -440,20 +474,10 @@ const TemplateManagement = () => {
                               "dd MMM yyyy"
                             )}
                           </p>
-                          <div className="w-full flex justify-center">
-                            <span
-                              className={`inline-block px-3 py-1 rounded-full text-sm ${
-                                template.status === "Sedang Digunakan"
-                                  ? "bg-teal-300 text-green-800"
-                                  : "bg-blue-100 text-green-800"
-                              }`}
-                            >
-                              {template.status}
-                            </span>
-                          </div>
                         </div>
                       </div>
                     }
+                    isActive={template.status === "Sedang Digunakan"}
                     onDelete={() => handleDelete(template)}
                     onEdit={() => handleEdit(template)}
                     onApply={() => handleApplyTemplate(template.id)}
