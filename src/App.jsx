@@ -18,6 +18,8 @@ import Login from "./pages/LoginPage";
 import TemplateManagement from "./pages/SertifikatPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import FormTugasByPegawai from "./pages/FormTugasByPegawai"
+import Dashboardpeserta from "./pages/DashboardPeserta";
+import AdminNotifications from "./pages/AdminNotification";
 
 
 const App = () => {
@@ -32,6 +34,7 @@ const App = () => {
        <Route path="/registerKelompok" element={<RegisterKelompok />} />
        <Route path="/registerPeserta" element={<RegisterPeserta />} />
        <Route path="/unauthorized" element={<UnauthorizedPage />} />
+       
 
        {/* Admin Routes */}
        <Route path="/dashboard" element={<ProtectedRoute roles={['Admin']}><Dashboard /></ProtectedRoute>} />
@@ -41,20 +44,24 @@ const App = () => {
        <Route path="/arsip-peserta-magang" element={<ProtectedRoute roles={['Admin']}><ArsipPesertaMagang /></ProtectedRoute>} />
        <Route path="/admin-management" element={<ProtectedRoute roles={['Admin']}><AdminManagement /></ProtectedRoute>} />
        <Route path="/sertifikat" element={<ProtectedRoute roles={['Admin']}><TemplateManagement /></ProtectedRoute>} />
+       <Route path="/notifadmin" element={<ProtectedRoute roles={['Admin']}><AdminNotifications /></ProtectedRoute>} />
 
        {/* Peserta Routes */}
        <Route path="/biodata" element={<ProtectedRoute roles={['User']}><BiodataPage /></ProtectedRoute>} />
        <Route path="/daftarTugas" element={<ProtectedRoute roles={['User']}><DaftarTugas /></ProtectedRoute>} />
        <Route path="/sertifikatPeserta" element={<ProtectedRoute roles={['User']}><SertifikatPeserta /></ProtectedRoute>} />
+       <Route path="/statistik" element={<ProtectedRoute roles={['User']}><Dashboardpeserta /></ProtectedRoute>} />
 
 
        {/*pegawai Routes*/}
        <Route path="/form-tugas-pegawai" element={<ProtectedRoute roles={['Pegawai']}><FormTugasByPegawai /></ProtectedRoute>} />
+       <Route path="/notifpegawai" element={<ProtectedRoute roles={['Pegawai']}><AdminNotifications /></ProtectedRoute>} />
      </Routes>
    </Router>
  );
 };
 
-//TINGGAL DI BAGIAN PEGAWAI LAGI GES
+//DONE SAMPAI SINI (Dashhboarddddd)
+//DONE SAMPAI NOTIF DI ADMIN DAN JUGA PEGAWAI MENYALAAAA
 
 export default App;

@@ -141,7 +141,7 @@ const RegisterKelompok = () => {
   };
 
   return (
-    <div className="grid grid-cols-2  max-w-[95rem] max-h-[50rem] h-auto mx-auto">
+    <div className="grid grid-cols-2  w-screen max-h-[50rem] h-auto mx-auto">
       <div className="relative bg-blue-300 h-screen">
         <img
           src={blue}

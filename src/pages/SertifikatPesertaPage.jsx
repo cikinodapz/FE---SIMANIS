@@ -79,10 +79,10 @@ const SertifikatPeserta = () => {
         html: `
           <div>
             <p class="text-gray-600">Selamat! Sertifikat magang Anda telah berhasil diunduh.</p>
-            <p class="text-sm text-blue-600 mt-2">Dokumen penting ini mencatat pencapaian dan kerja keras Anda selama program magang.</p>
+            <p class="text-sm text-blue-600/90 mt-2">Dokumen penting ini mencatat pencapaian dan kerja keras Anda selama program magang.</p>
           </div>
         `,
-        confirmButtonColor: "#06255C",
+        confirmButtonColor: "rgb(37, 99, 235, 0.9)", // Ini adalah nilai RGB untuk blue-600 dengan opacity 0.9
         confirmButtonText: "Claim Sertifikat",
         footer:
           '<span class="text-sm text-gray-500">📄✨ Dokumentasikan pencapaian Anda!</span>',
@@ -118,7 +118,7 @@ const SertifikatPeserta = () => {
     if (isLoading) {
       return (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Loader className="w-8 h-8 animate-spin text-blue-premier" />
+          <Loader className="w-8 h-8 animate-spin text-blue-600/90" />
           <span className="ml-2 text-gray-600">Memuat sertifikat...</span>
         </div>
       );
@@ -127,7 +127,7 @@ const SertifikatPeserta = () => {
     if (certificateStatus === "not_available") {
       return (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 p-6">
-          <FileText className="w-16 h-16 mb-4 text-blue-premier opacity-50" />
+          <FileText className="w-16 h-16 mb-4 text-blue-600/90 opacity-50" />
           <h2 className="text-xl font-semibold mb-2 text-gray-700">
             Sertifikat Belum Tersedia
           </h2>
@@ -135,7 +135,7 @@ const SertifikatPeserta = () => {
             Sertifikat Anda akan tersedia setelah menyelesaikan seluruh program
             magang dan mendapatkan persetujuan dari pembimbing.
           </p>
-          <p className="text-sm text-blue-premier">
+          <p className="text-sm text-blue-600/90">
             Silakan selesaikan semua tugas dan aktivitas yang diperlukan.
           </p>
         </div>
@@ -145,7 +145,7 @@ const SertifikatPeserta = () => {
     if (certificateStatus === "in_process") {
       return (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 p-6">
-          <Clock className="w-16 h-16 mb-4 text-blue-premier opacity-50" />
+          <Clock className="w-16 h-16 mb-4 text-blue-600/90 opacity-50" />
           <h2 className="text-xl font-semibold mb-2 text-gray-700">
             Sertifikat Dalam Proses
           </h2>
@@ -153,7 +153,7 @@ const SertifikatPeserta = () => {
             Sertifikat Anda sedang dalam proses pembuatan dan verifikasi. Mohon
             tunggu beberapa waktu.
           </p>
-          <p className="text-sm text-blue-premier">
+          <p className="text-sm text-blue-600/90">
             Kami akan memberitahu Anda segera setelah sertifikat siap melalui
             email anda.
           </p>
@@ -188,14 +188,14 @@ const SertifikatPeserta = () => {
   };
 
   return (
-    <div className="flex shadow max-w-[95rem] mx-auto">
+    <div className="flex max-w-[95rem] mx-auto">
       <Sidebar />
       <div className="flex-1 ml-[250px] h-screen">
         <Navbar />
-        <div className="p-[100px]">
+        <div className="p-[40px]">
           <div className="shadow-lg p-6 bg-white rounded-md mt-10">
-            <h1 className="text-blue-premier text-3xl font-bold">Sertifikat</h1>
-            <p className="text-sm text-gray-500">Sertifikat Magang</p>
+            {/* <h1 className="text-blue-premier text-3xl font-bold">Sertifikat</h1>
+            <p className="text-sm text-gray-500">Sertifikat Magang</p> */}
 
             <div className="mt-10 bg-gray-100 rounded-lg min-h-[700px] relative">
               {renderContent()}
@@ -205,7 +205,7 @@ const SertifikatPeserta = () => {
               <div className="flex justify-center font-medium mt-3">
                 <Button
                   label="Download Sertifikat"
-                  className="bg-gradient-to-r from-[#2e4163] to-[#041a42] text-white hover:from-[#041a42] hover:to-[#2e4163] disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl border-2 border-[#2e4163] hover:border-[#041a42]"
+                  className="bg-gradient-to-r from-blue-600/90 to-blue-800 text-white hover:from-blue-800 hover:to-blue-600/90 disabled:bg-gray-400 transition-all duration-300 transform  shadow-lg hover:shadow-xl border-2 border-blue-600/90 hover:border-blue-800"
                   onClick={handleDownload}
                   disabled={isLoading || !pdfData}
                 />
