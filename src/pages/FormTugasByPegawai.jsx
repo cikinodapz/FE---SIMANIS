@@ -3,10 +3,10 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import DeletedAlert from "../components/DeletedAlert";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 const Modal = ({ children, isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -38,6 +38,40 @@ const FormTugas = () => {
   const [error, setError] = useState(null);
   const [pesertaList, setPesertaList] = useState([]);
   const [selectedPesertaId, setSelectedPesertaId] = useState("");
+
+   // Pagination states
+   const [currentPage, setCurrentPage] = useState(1);
+   const [itemsPerPage] = useState(7);
+   const [totalPages, setTotalPages] = useState(0);
+ 
+   // Pagination functions
+   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+   const goToFirstPage = () => setCurrentPage(1);
+   const goToLastPage = () => setCurrentPage(totalPages);
+   const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+   const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+ 
+   // Filter and sort tugas
+   const filteredTugasPaging = rekapanTugas
+     .filter((tugas) =>
+       tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
+     )
+     .sort((a, b) => {
+       const namaA = a.peserta?.nama || '';
+       const namaB = b.peserta?.nama || '';
+       return namaA.localeCompare(namaB);
+     });
+ 
+   // Update total pages when filtered data changes
+   useEffect(() => {
+     setTotalPages(Math.ceil(filteredTugasPaging.length / itemsPerPage));
+     setCurrentPage(1); // Reset to first page when filter changes
+   }, [filteredTugasPaging.length, itemsPerPage]);
+ 
+   // Get current items for the current page
+   const indexOfLastItem = currentPage * itemsPerPage;
+   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+   const currentItems = filteredTugasPaging.slice(indexOfFirstItem, indexOfLastItem);
 
   const fetchPesertaList = async () => {
     try {
@@ -235,14 +269,11 @@ const FormTugas = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("accessToken");
-          await axios.delete(
-            `http://localhost:3000/pegawai/delete-tugas/${id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          await axios.delete(`http://localhost:3000/pegawai/delete-tugas/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           Swal.fire({
             icon: "success",
@@ -268,28 +299,17 @@ const FormTugas = () => {
   if (isLoading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
 
-  const filteredTugas = rekapanTugas
-    .filter((tugas) =>
-      tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      // Mengambil nama peserta, jika null/undefined diganti dengan string kosong
-      const namaA = a.peserta?.nama || "";
-      const namaB = b.peserta?.nama || "";
-      // Mengurutkan dengan localeCompare untuk handle huruf lokal dengan benar
-      return namaA.localeCompare(namaB);
-    });
   return (
-    <div className="flex shadow max-w-[95rem] mx-auto">
+    <div className="flex max-w-[95rem] mx-auto">
       <Sidebar />
       <div className="flex-1 ml-[250px] mx-auto h-screen">
         <Navbar />
         <main className="p-[100px]">
           <div className="shadow-lg p-6 bg-white rounded-md mt-10">
-            <h2 className="text-blue-premier text-3xl font-bold">
+            <h2 className="text-blue-600/90 text-3xl font-bold">
               Rekapan Tugas
             </h2>
-            <p className="text-sm text-gray-500">Semua Peserta Magang</p>
+            <p className="text-sm text-gray-500">Total: {rekapanTugas.length} Tugas</p>
 
             <div className="my-4 flex items-center justify-center space-x-4">
               <Input
@@ -298,20 +318,22 @@ const FormTugas = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 px={20}
-                className="w-full text-center max-w-lg border border-blue-premier rounded-lg"
+                className="w-full text-center max-w-lg border border-blue-600/90 rounded-lg"
               />
 
               <Button
                 label={"Tugas"}
                 variant="blue"
                 ikon={<Plus />}
-                onClick={handleOpenAddModal} // Gunakan fungsi baru
+                onClick={handleOpenAddModal}
               />
             </div>
 
-            <table className="w-full border-collapse text-center mt-10">
+            <div className="flex flex-col min-h-[600px]">
+              <div className="flex-grow overflow-auto">
+                <table className="w-full border-collapse text-center">
               <thead>
-                <tr className="bg-blue-premier text-white border-lg">
+                <tr className="bg-blue-600/90 text-white border-lg">
                   <th className="p-2 border border-gray-300">No</th>
                   <th className="p-2 border border-gray-300">Peserta</th>
                   <th className="p-2 border border-gray-300">Deadline</th>
@@ -323,16 +345,16 @@ const FormTugas = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTugas.map((tugas, index) => (
+              {currentItems.map((tugas, index) => (
                   <tr
                     key={tugas.id}
                     className={`${
                       index % 2 === 0 ? "bg-gray-50" : "bg-white"
                     } hover:bg-blue-50`}
                   >
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {index + 1}
-                    </td>
+                    <td className="border border-gray-300 p-4 text-sm">
+                          {indexOfFirstItem + index + 1}
+                        </td>
                     <td className="border border-gray-300 p-2 text-sm">
                       {tugas.peserta?.nama || "-"}
                     </td>
@@ -356,9 +378,8 @@ const FormTugas = () => {
                     <td className="border border-gray-300 p-2 text-sm">
                       {tugas.pegawai?.nama || "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {tugas.deskripsi}{" "}
-                    </td>
+                    <td className="border border-gray-300 p-2 text-sm"> 
+                      {tugas.deskripsi} </td>
                     <td className="border border-gray-300 p-2 text-sm">
                       {tugas.catatan}
                     </td>
@@ -382,7 +403,84 @@ const FormTugas = () => {
                 ))}
               </tbody>
             </table>
+            </div>
+             {/* Pagination Controls */}
+             <div className="mt-auto pt-4 border-t">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={goToFirstPage}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="First page"
+                  >
+                    <ChevronsLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+
+                  <div className="flex gap-1">
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNumber = index + 1;
+                      if (
+                        pageNumber === 1 ||
+                        pageNumber === totalPages ||
+                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => paginate(pageNumber)}
+                            className={`px-4 py-2 rounded-lg border ${
+                              currentPage === pageNumber
+                                ? "bg-blue-600/90 text-white"
+                                : "hover:bg-gray-100"
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      } else if (
+                        pageNumber === currentPage - 2 ||
+                        pageNumber === currentPage + 2
+                      ) {
+                        return <span key={pageNumber} className="px-2 py-1">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Next page"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={goToLastPage}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Last page"
+                  >
+                    <ChevronsRight className="h-5 w-5" />
+                  </button>
+
+                  <span className="text-sm text-gray-600 ml-4">
+                    Halaman {currentPage} dari {totalPages}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          
 
           <Modal isOpen={showPopup} onClose={() => setShowPopup(false)}>
             <form onSubmit={handleSubmit}>

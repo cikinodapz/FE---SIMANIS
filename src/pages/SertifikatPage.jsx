@@ -8,8 +8,17 @@ import Input from "../components/Input";
 import { format } from "date-fns";
 import bps from "../assets/bps.png";
 import Swal from "sweetalert2";
+import DOMPurify from "dompurify";
 
-const CardImage = ({ image, label, onDelete, onEdit, onApply, isActive }) => {
+const CardImage = ({
+  image,
+  label,
+  onDelete,
+  onEdit,
+  onApply,
+  isActive,
+  onPreview,
+}) => {
   return (
     <div
       className={`group relative rounded-xl transition-all duration-300 ${
@@ -70,7 +79,10 @@ const CardImage = ({ image, label, onDelete, onEdit, onApply, isActive }) => {
             </button>
           </div>
 
-          <button className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <button
+            onClick={onPreview} // Add onClick handler
+            className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          >
             <Eye className="w-4 h-4" />
             <span>Preview</span>
           </button>
@@ -125,6 +137,56 @@ const TemplateManagement = () => {
       });
     }
   };
+
+  // In the TemplateManagement component, add state for preview
+  const [previewContent, setPreviewContent] = useState(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+
+  // Add a function to handle preview
+  // Function to handle preview template
+  const handlePreviewTemplate = async (templateId) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `http://localhost:3000/admin/preview-template/${templateId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+          responseType: "json",
+        }
+      );
+
+      if (response.data && response.data.htmlContent) {
+        const sanitizedContent = DOMPurify.sanitize(response.data.htmlContent, {
+          ADD_TAGS: ["style", "meta", "xml"], // Tambahkan tag yang diperlukan
+          ADD_ATTR: ['class', 'id', 'style', 'xmlns', 'o', 'w', 'mc', 'Ignorable'],
+          ALLOW_DATA_ATTR: true,
+          USE_PROFILES: { html: true },
+          FORCE_BODY: true,
+          WHOLE_DOCUMENT: true,
+        });
+
+        setPreviewContent({
+          content: sanitizedContent,
+          templateId: response.data.templateId,
+          templateNama: response.data.templateNama,
+        });
+        setIsPreviewModalOpen(true);
+      }
+    } catch (err) {
+      console.error("Error previewing template:", err);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: err.response?.data?.message || "Gagal melihat preview template",
+      });
+    }
+  };
+
+
+  
 
   const handleEdit = async (template) => {
     console.log("Starting edit process for template:", template);
@@ -419,7 +481,7 @@ const TemplateManagement = () => {
     );
 
   return (
-    <div className="flex shadow max-w-[95rem] mx-auto">
+    <div className="flex max-w-[95rem] mx-auto">
       <Sidebar />
       <div className="flex-1 ml-[250px] h-screen w-screen">
         <Navbar />
@@ -427,7 +489,7 @@ const TemplateManagement = () => {
           <div className="shadow-lg p-6 bg-white rounded-md mt-10">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h1 className="text-blue-premier text-3xl font-bold">
+                <h1 className="text-blue-600/90 text-3xl font-bold">
                   Daftar Template
                 </h1>
                 <p className="text-gray-600 mt-2">
@@ -481,6 +543,7 @@ const TemplateManagement = () => {
                     onDelete={() => handleDelete(template)}
                     onEdit={() => handleEdit(template)}
                     onApply={() => handleApplyTemplate(template.id)}
+                    onPreview={() => handlePreviewTemplate(template.id)}
                   />
                 </div>
               ))}
@@ -540,6 +603,102 @@ const TemplateManagement = () => {
                 <Button label="Submit" variant="blue" type="submit" />
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {isPreviewModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">
+                Preview Template: {previewContent.templateNama}
+              </h2>
+              <button
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div
+              className="preview-container overflow-auto"
+              style={{ height: "calc(90vh - 120px)" }}
+            >
+              <iframe
+                srcDoc={`
+                  <!DOCTYPE html>
+                  <html>
+                    <head>
+                      <style>
+                        body {
+                          margin: 0;
+                          padding: 20px;
+                          background: white;
+                        }
+                        /* Preserve all Word document styling */
+                        * {
+                          -webkit-print-color-adjust: exact !important;
+                          color-adjust: exact !important;
+                          print-color-adjust: exact !important;
+                        }
+                        /* Preserve all original colors */
+                        [style*="color"] {
+                          color: inherit !important;
+                        }
+                        [style*="background"] {
+                          background-color: inherit !important;
+                        }
+                        /* Maintain exact table formatting */
+                        table {
+                          border-collapse: separate;
+                          border-spacing: 2px;
+                          margin: initial;
+                          width: auto !important;
+                        }
+                        td, th {
+                          padding: inherit;
+                          background-color: inherit !important;
+                          border-color: inherit !important;
+                        }
+                        /* Preserve exact image dimensions */
+                        img {
+                          max-width: 100%;
+                          height: auto;
+                          display: inline-block;
+                        }
+                        /* Maintain original text formatting */
+                        p, h1, h2, h3, h4, h5, h6, span, div {
+                          margin: revert;
+                          font-size: revert;
+                          font-weight: revert;
+                          line-height: revert;
+                          color: inherit !important;
+                          background-color: inherit !important;
+                        }
+                        /* Preserve text highlighting */
+                        ::selection {
+                          background-color: rgba(0, 0, 255, 0.2);
+                        }
+                        /* Preserve list styling */
+                        ul, ol {
+                          margin: revert;
+                          padding: revert;
+                          list-style-type: revert;
+                        }
+                        /* Preserve font styles */
+                        @font-face {
+                          font-family: inherit;
+                        }
+                      </style>
+                    </head>
+                    <body>${previewContent.content}</body>
+                  </html>
+                `}
+                className="w-full h-full border-0"
+                title="Template Preview"
+              />
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import blue from "../assets/blue.jpg";
-import Input from "../components/Input";
+import Input from "../components/Inputglass";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import logo from "../assets/logo.png";
@@ -99,7 +99,7 @@ const LoginPage = () => {
         }).then(() => {
           const userRole = localStorage.getItem('role');
           if (userRole === 'User') {
-            navigate('/biodata');
+            navigate('/statistik');
           } else if (userRole === 'Pegawai') {
             navigate('/form-tugas-pegawai');
           } else {
@@ -183,14 +183,17 @@ const LoginPage = () => {
               required
             />
           </div>
+          <div className="py-5">
           <Button
             variant="premier"
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-blue-500 flex justify-center text-center text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2  px-4 bg-blue-500 flex justify-center text-center text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Loading..." : "Login"}
           </Button>
+          </div>
+         
           <div className="mt-4 text-center text-white">
             <p>
               Belum punya akun?{" "}

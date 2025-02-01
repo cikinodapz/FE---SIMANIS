@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Input from "../components/Input";
-import { Eye, Check, X } from "lucide-react";
+import { Eye, Check, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
@@ -15,6 +15,43 @@ const Kelompok = () => {
   useEffect(() => {
     fetchKelompok();
   }, []);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
+  const [totalPages, setTotalPages] = useState(0);
+
+  useEffect(() => {
+    fetchKelompok();
+  }, []);
+
+  // Pagination functions
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToLastPage = () => setCurrentPage(totalPages);
+  const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  const filteredKelompokKedua = kelompokList.filter(
+    (kelompok) =>
+      kelompok.instansi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kelompok.nama_ketua.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      kelompok.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Update total pages when filtered data changes
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredKelompokKedua.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when filter changes
+  }, [filteredKelompokKedua.length, itemsPerPage]);
+
+  // Get current items
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredKelompokKedua.slice(indexOfFirstItem, indexOfLastItem);
 
   const fetchKelompok = async () => {
     try {
@@ -235,7 +272,7 @@ const Kelompok = () => {
         <div className="flex-1 ml-[250px] h-screen w-screen">
           <Navbar />
           <div className="p-[100px] flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-premier"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600/90"></div>
           </div>
         </div>
       </div>
@@ -243,13 +280,13 @@ const Kelompok = () => {
   }
 
   return (
-    <div className="flex shadow max-w-[95rem] mx-auto">
+    <div className="flex max-w-[95rem] mx-auto">
       <Sidebar />
       <div className="flex-1 ml-[250px] h-screen w-screen">
         <Navbar />
         <div className="p-[100px]">
           <div className="shadow-lg p-6 bg-white rounded-md mt-10">
-            <h1 className="text-blue-premier text-3xl font-bold">Daftar Kelompok</h1>
+            <h1 className="text-blue-600/90 text-3xl font-bold">Daftar Kelompok</h1>
             <p className="text-sm text-gray-500">Total: {kelompokList.length} Kelompok</p>
 
             <div className="my-4 flex items-center justify-center space-x-4">
@@ -259,94 +296,171 @@ const Kelompok = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 px={20}
-                className="w-full text-center max-w-lg border border-blue-premier rounded-lg"
+                className="w-full text-center max-w-lg border border-bg-blue-600/90 rounded-lg"
               />
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-center mt-10">
-                <thead>
-                  <tr className="bg-blue-premier text-white">
-                    <th className="p-2 border border-gray-300">No</th>
-                    <th className="p-2 border border-gray-300">Email</th>
-                    <th className="p-2 border border-gray-300">Ketua</th>
-                    <th className="p-2 border border-gray-300">Institusi</th>
-                    <th className="p-2 border border-gray-300">Status</th>
-                    <th className="p-2 border border-gray-300">Surat Pengantar</th>
-                    <th className="p-2 border border-gray-300">Surat Balasan</th>
-                    <th className="p-2 border border-gray-300">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredKelompok.map((kelompok, index) => (
-                    <tr key={kelompok.id} className="hover:bg-blue-50">
-                      <td className="border border-gray-300 p-4 text-sm">
-                        {index + 1}
-                      </td>
-                      <td className="p-2 border border-gray-300">{kelompok.email}</td>
-                      <td className="p-2 border border-gray-300">{kelompok.nama_ketua}</td>
-                      <td className="p-2 border border-gray-300">{kelompok.instansi}</td>
-                      <td className="p-2 border border-gray-300">
-                        <span
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                            kelompok.status === "Diterima"
-                              ? "bg-teal-500 text-white"
-                              : kelompok.status === "Ditolak"
-                              ? "bg-red-500 text-white"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {kelompok.status}
-                        </span>
-                      </td>
-                      <td className="p-2 border border-gray-300">
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={() => handlePreviewDocument(kelompok.surat_pengantar, "Surat Pengantar")}
-                            className="bg-white p-2 shadow-lg rounded-lg hover:bg-blue-50"
-                          >
-                            <Eye className="text-blue-sky" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="p-2 border border-gray-300">
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={() => handlePreviewDocument(kelompok.surat_balasan, "Surat Balasan")}
-                            className="bg-white p-2 shadow-lg rounded-lg hover:bg-blue-50"
-                          >
-                            <Eye className="text-oren" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="p-2 border border-gray-300">
-                        <div className="flex items-center justify-center space-x-2">
-                          {kelompok.status !== "Diterima" && kelompok.status !== "Ditolak" && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(kelompok.id,kelompok.nama_ketua)}
-                                className="bg-teal-500 p-2 rounded-lg hover:bg-green-600 transition-colors"
-                                title="Setujui"
-                              >
-                                <Check className="text-white h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleReject(kelompok.id,kelompok.nama_ketua)}
-                                className="bg-red-500 p-2 rounded-lg hover:bg-red-600 transition-colors"
-                                title="Tolak"
-                              >
-                                <X className="text-white h-4 w-4" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
+            <div className="flex flex-col min-h-[600px]">
+              <div className="flex-grow overflow-auto">
+                <table className="w-full border-collapse text-center">
+                  <thead className="sticky top-0 bg-blue-600/90 text-white">
+                    <tr>
+                      <th className="p-2 border border-gray-300">No</th>
+                      <th className="p-2 border border-gray-300">Email</th>
+                      <th className="p-2 border border-gray-300">Ketua</th>
+                      <th className="p-2 border border-gray-300">Institusi</th>
+                      <th className="p-2 border border-gray-300">Status</th>
+                      <th className="p-2 border border-gray-300">Surat Pengantar</th>
+                      <th className="p-2 border border-gray-300">Surat Balasan</th>
+                      <th className="p-2 border border-gray-300">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {currentItems.map((kelompok, index) => (
+                      <tr key={kelompok.id} className="hover:bg-blue-50">
+                        <td className="border border-gray-300 p-4 text-sm">
+                          {indexOfFirstItem + index + 1}
+                        </td>
+                        <td className="p-2 border border-gray-300">{kelompok.email}</td>
+                        <td className="p-2 border border-gray-300">{kelompok.nama_ketua}</td>
+                        <td className="p-2 border border-gray-300">{kelompok.instansi}</td>
+                        <td className="p-2 border border-gray-300">
+                          <span
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                              kelompok.status === "Diterima"
+                                ? "bg-teal-500 text-white"
+                                : kelompok.status === "Ditolak"
+                                ? "bg-red-500 text-white"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {kelompok.status}
+                          </span>
+                        </td>
+                        <td className="p-2 border border-gray-300">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => handlePreviewDocument(kelompok.surat_pengantar, "Surat Pengantar")}
+                              className="bg-white p-2 shadow-lg rounded-lg hover:bg-blue-50"
+                            >
+                              <Eye className="text-blue-sky" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-2 border border-gray-300">
+                          <div className="flex items-center justify-center">
+                            <button
+                              onClick={() => handlePreviewDocument(kelompok.surat_balasan, "Surat Balasan")}
+                              className="bg-white p-2 shadow-lg rounded-lg hover:bg-blue-50"
+                            >
+                              <Eye className="text-oren" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-2 border border-gray-300">
+                          <div className="flex items-center justify-center space-x-2">
+                            {kelompok.status !== "Diterima" && kelompok.status !== "Ditolak" && (
+                              <>
+                                <button
+                                  onClick={() => handleApprove(kelompok.id, kelompok.nama_ketua)}
+                                  className="bg-teal-500 p-2 rounded-lg hover:bg-green-600 transition-colors"
+                                  title="Setujui"
+                                >
+                                  <Check className="text-white h-4 w-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleReject(kelompok.id, kelompok.nama_ketua)}
+                                  className="bg-red-500 p-2 rounded-lg hover:bg-red-600 transition-colors"
+                                  title="Tolak"
+                                >
+                                  <X className="text-white h-4 w-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="mt-auto pt-4 border-t">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={goToFirstPage}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="First page"
+                  >
+                    <ChevronsLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+
+                  <div className="flex gap-1">
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNumber = index + 1;
+                      if (
+                        pageNumber === 1 ||
+                        pageNumber === totalPages ||
+                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => paginate(pageNumber)}
+                            className={`px-4 py-2 rounded-lg border ${
+                              currentPage === pageNumber
+                                ? "bg-blue-600/90 text-white"
+                                : "hover:bg-gray-100"
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      } else if (
+                        pageNumber === currentPage - 2 ||
+                        pageNumber === currentPage + 2
+                      ) {
+                        return <span key={pageNumber} className="px-2 py-1">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Next page"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={goToLastPage}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Last page"
+                  >
+                    <ChevronsRight className="h-5 w-5" />
+                  </button>
+
+                  <span className="text-sm text-gray-600 ml-4">
+                    Halaman {currentPage} dari {totalPages}
+                  </span>
+                </div>
+              </div>
             </div>
 
+            {/* Modal code remains the same */}
             {selectedFile && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg w-[80%] max-w-2xl">

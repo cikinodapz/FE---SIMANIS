@@ -51,16 +51,16 @@ export const ProtectedRoute = ({ children, roles = [] }) => {
 
   // Handle root dan login path untuk redirect awal setelah login
   if (location.pathname === "/" || location.pathname === "/login") {
-    return <Navigate to={auth.role === "Admin" ? "/dashboard" : "/biodata"} replace />;
+    return <Navigate to={auth.role === "Admin" ? "/dashboard" : "/statistik"} replace />;
   }
 
   // Jika user mencoba mengakses halaman yang tidak diizinkan
-  if (!auth.isAuthorized && auth.role === "Admin" && location.pathname === "/biodata") {
+  if (!auth.isAuthorized && auth.role === "Admin" && location.pathname === "/statistik") {
     return <Navigate to="/unauthorized" replace />;
   }
 
   if (!auth.isAuthorized && auth.role === "User" && location.pathname.startsWith("/")) {
-    return <Navigate to="/biodata" replace />;
+    return <Navigate to="/statistik" replace />;
   }
 
   if (!auth.isAuthorized && auth.role === "Pegawai" && location.pathname.startsWith("/")) {
@@ -107,7 +107,7 @@ export const PublicRoute = ({ children }) => {
             ? "/dashboard"
             : userRole === "Pegawai"
             ? "/form-tugas-pegawai"
-            : "/biodata"
+            : "/statistik"
         }
         replace
       />
