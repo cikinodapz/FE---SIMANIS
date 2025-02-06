@@ -101,6 +101,10 @@ const TemplateManagement = () => {
     nama: "",
     file: null,
   });
+  // Add these states at the beginning of the TemplateManagement component
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStage, setUploadStage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchTemplates();
@@ -144,49 +148,39 @@ const TemplateManagement = () => {
 
   // Add a function to handle preview
   // Function to handle preview template
+  // Modify the handlePreviewTemplate function
   const handlePreviewTemplate = async (templateId) => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        `http://localhost:3000/admin/preview-template/${templateId}`,
+        `http://localhost:3000/admin/lihat-template/${templateId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            Accept: "application/json",
           },
-          responseType: "json",
+          responseType: "arraybuffer", // Important for PDF binary data
         }
       );
 
-      if (response.data && response.data.htmlContent) {
-        const sanitizedContent = DOMPurify.sanitize(response.data.htmlContent, {
-          ADD_TAGS: ["style", "meta", "xml"], // Tambahkan tag yang diperlukan
-          ADD_ATTR: ['class', 'id', 'style', 'xmlns', 'o', 'w', 'mc', 'Ignorable'],
-          ALLOW_DATA_ATTR: true,
-          USE_PROFILES: { html: true },
-          FORCE_BODY: true,
-          WHOLE_DOCUMENT: true,
-        });
+      // Create blob from response data
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
 
-        setPreviewContent({
-          content: sanitizedContent,
-          templateId: response.data.templateId,
-          templateNama: response.data.templateNama,
-        });
-        setIsPreviewModalOpen(true);
-      }
+      // Set preview content with PDF URL
+      setPreviewContent({
+        url,
+        templateId: templateId,
+      });
+      setIsPreviewModalOpen(true);
     } catch (err) {
       console.error("Error previewing template:", err);
       await Swal.fire({
         icon: "error",
         title: "Gagal!",
-        text: err.response?.data?.message || "Gagal melihat preview template",
+        text: "Gagal melihat preview template",
       });
     }
   };
-
-
-  
 
   const handleEdit = async (template) => {
     console.log("Starting edit process for template:", template);
@@ -427,6 +421,9 @@ const TemplateManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadStage("Memulai upload...");
 
     const formDataToSend = new FormData();
     formDataToSend.append("nama", formData.nama);
@@ -434,7 +431,18 @@ const TemplateManagement = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.post(
+
+      // Simulate upload stages with progress
+      const updateProgress = (progress, stage) => {
+        setUploadProgress(progress);
+        setUploadStage(stage);
+      };
+
+      // Upload the file
+      updateProgress(20, "Mengupload file...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const response = await axios.post(
         "http://localhost:3000/admin/upload-template",
         formDataToSend,
         {
@@ -442,12 +450,31 @@ const TemplateManagement = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
+          onUploadProgress: (progressEvent) => {
+            const progress =
+              Math.round((progressEvent.loaded * 30) / progressEvent.total) +
+              20;
+            updateProgress(progress, "Mengupload file...");
+          },
         }
       );
+
+      // Simulate conversion process
+      updateProgress(60, "Mengkonversi file ke PDF...");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Simulate preview generation
+      updateProgress(80, "Membuat preview...");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Complete
+      updateProgress(100, "Selesai!");
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       await fetchTemplates();
       setIsPopupVisible(false);
       setFormData({ nama: "", file: null });
+      setIsUploading(false);
 
       Swal.fire({
         icon: "success",
@@ -458,6 +485,7 @@ const TemplateManagement = () => {
       });
     } catch (err) {
       console.error("Error adding template:", err);
+      setIsUploading(false);
       Swal.fire({
         icon: "error",
         title: "Error!",
@@ -551,7 +579,6 @@ const TemplateManagement = () => {
           </div>
         </div>
       </div>
-
       {isPopupVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
@@ -594,13 +621,34 @@ const TemplateManagement = () => {
                 />
               </div>
 
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>{uploadStage}</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3">
                 <Button
                   label="Cancel"
                   variant="white"
                   onClick={() => setIsPopupVisible(false)}
+                  disabled={isUploading}
                 />
-                <Button label="Submit" variant="blue" type="submit" />
+                <Button
+                  label={isUploading ? "Uploading..." : "Submit"}
+                  variant="blue"
+                  type="submit"
+                  disabled={isUploading}
+                />
               </div>
             </form>
           </div>
@@ -608,96 +656,39 @@ const TemplateManagement = () => {
       )}
       {isPreviewModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">
-                Preview Template: {previewContent.templateNama}
+          <div className="bg-white rounded-lg shadow-xl w-[46.3%] h-[72vh] max-w-5xl flex flex-col">
+            {/* Header - Reduced padding */}
+            <div className="flex justify-between items-center px-4 py-3 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Preview Template
               </h2>
               <button
-                onClick={() => setIsPreviewModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                onClick={() => {
+                  setIsPreviewModalOpen(false);
+                  if (previewContent?.url) {
+                    window.URL.revokeObjectURL(previewContent.url);
+                  }
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded-full"
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div
-              className="preview-container overflow-auto"
-              style={{ height: "calc(90vh - 120px)" }}
-            >
-              <iframe
-                srcDoc={`
-                  <!DOCTYPE html>
-                  <html>
-                    <head>
-                      <style>
-                        body {
-                          margin: 0;
-                          padding: 20px;
-                          background: white;
-                        }
-                        /* Preserve all Word document styling */
-                        * {
-                          -webkit-print-color-adjust: exact !important;
-                          color-adjust: exact !important;
-                          print-color-adjust: exact !important;
-                        }
-                        /* Preserve all original colors */
-                        [style*="color"] {
-                          color: inherit !important;
-                        }
-                        [style*="background"] {
-                          background-color: inherit !important;
-                        }
-                        /* Maintain exact table formatting */
-                        table {
-                          border-collapse: separate;
-                          border-spacing: 2px;
-                          margin: initial;
-                          width: auto !important;
-                        }
-                        td, th {
-                          padding: inherit;
-                          background-color: inherit !important;
-                          border-color: inherit !important;
-                        }
-                        /* Preserve exact image dimensions */
-                        img {
-                          max-width: 100%;
-                          height: auto;
-                          display: inline-block;
-                        }
-                        /* Maintain original text formatting */
-                        p, h1, h2, h3, h4, h5, h6, span, div {
-                          margin: revert;
-                          font-size: revert;
-                          font-weight: revert;
-                          line-height: revert;
-                          color: inherit !important;
-                          background-color: inherit !important;
-                        }
-                        /* Preserve text highlighting */
-                        ::selection {
-                          background-color: rgba(0, 0, 255, 0.2);
-                        }
-                        /* Preserve list styling */
-                        ul, ol {
-                          margin: revert;
-                          padding: revert;
-                          list-style-type: revert;
-                        }
-                        /* Preserve font styles */
-                        @font-face {
-                          font-family: inherit;
-                        }
-                      </style>
-                    </head>
-                    <body>${previewContent.content}</body>
-                  </html>
-                `}
-                className="w-full h-full border-0"
-                title="Template Preview"
-              />
+            {/* Content - Minimized padding */}
+            <div className="flex-1 p-2 bg-gray-50">
+              <div className="w-[870px] h-[656px] bg-white">
+                <iframe
+                  src={previewContent?.url}
+                  className="w-full h-full"
+                  title="Template Preview"
+                  style={{
+                    display: "block",
+                    border: "none",
+                    backgroundColor: "#fff",
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>

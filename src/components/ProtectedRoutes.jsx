@@ -64,7 +64,7 @@ export const ProtectedRoute = ({ children, roles = [] }) => {
   }
 
   if (!auth.isAuthorized && auth.role === "Pegawai" && location.pathname.startsWith("/")) {
-    return <Navigate to="/form-tugas-pegawai" replace />;
+    return <Navigate to="/profile" replace />;
   }
 
   return children;

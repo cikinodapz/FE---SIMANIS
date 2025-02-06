@@ -297,13 +297,13 @@ const AdminManagement = () => {
                         <td className="border border-gray-300 p-2">{pegawai.jabatan}</td>
                         <td className="border border-gray-300 p-2">{pegawai.role}</td>
                         <td className="border border-gray-300 p-2 flex items-center justify-center space-x-4">
-                          <div className="p-2 rounded-lg bg-white shadow-lg">
+                          <div className="p-2 rounded-lg bg-white shadow-lg bg-yellow-50">
                             <Pencil
                               onClick={() => handleEditPegawai(pegawai)}
                               className="text-yellow-600 hover:underline focus:outline-none cursor-pointer"
                             />
                           </div>
-                          <div className="p-2 rounded-lg bg-white shadow-lg">
+                          <div className="p-2 rounded-lg bg-red-100 shadow-lg">
                             <Trash2
                               onClick={() => handleDeletePegawai(pegawai.id)}
                               className="text-red-500 hover:underline focus:outline-none cursor-pointer"

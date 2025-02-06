@@ -4,7 +4,7 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import logo from "../assets/logo.png";
 import Swal from "sweetalert2"; // Import sweetalert2
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const RegisterKelompok = () => {
@@ -42,6 +42,58 @@ const RegisterKelompok = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Validate file types first
+    const allowedFileType = "application/pdf";
+    if (files.surat_pengantar && files.surat_pengantar.type !== allowedFileType) {
+      setLoading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Format File Tidak Sesuai',
+        html: `
+          <div class="p-4">
+            <p class="text-gray-800">
+              Surat Pengantar harus berformat PDF.
+            </p>
+            <div class="mt-3 text-sm text-gray-600">
+              Silakan upload ulang file dengan format yang sesuai.
+            </div>
+          </div>
+        `,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title text-xl font-bold text-gray-800 mb-4',
+        },
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#2563eb',
+      });
+      return;
+    }
+
+    if (files.surat_balasan && files.surat_balasan.type !== allowedFileType) {
+      setLoading(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Format File Tidak Sesuai',
+        html: `
+          <div class="p-4">
+            <p class="text-gray-800">
+              Surat Balasan harus berformat PDF.
+            </p>
+            <div class="mt-3 text-sm text-gray-600">
+              Silakan upload ulang file dengan format yang sesuai.
+            </div>
+          </div>
+        `,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title text-xl font-bold text-gray-800 mb-4',
+        },
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#2563eb',
+      });
+      return;
+    }
 
     try {
       const formDataToSend = new FormData();
@@ -91,50 +143,71 @@ const RegisterKelompok = () => {
             </div>
           `,
           customClass: {
-            container: 'custom-swal-container',
-            popup: 'custom-swal-popup',
-            title: 'custom-swal-title text-2xl font-bold text-gray-800 mb-4',
-            htmlContainer: 'custom-swal-html',
-            confirmButton: 'custom-swal-confirm-btn'
+            container: "custom-swal-container",
+            popup: "custom-swal-popup",
+            title: "custom-swal-title text-2xl font-bold text-gray-800 mb-4",
+            htmlContainer: "custom-swal-html",
+            confirmButton: "custom-swal-confirm-btn",
           },
           confirmButtonText: "Mengerti",
           confirmButtonColor: "#2563eb",
           showClass: {
-            popup: 'animate__animated animate__fadeInDown animate__faster'
+            popup: "animate__animated animate__fadeInDown animate__faster",
           },
           hideClass: {
-            popup: 'animate__animated animate__fadeOutUp animate__faster'
-          }
+            popup: "animate__animated animate__fadeOutUp animate__faster",
+          },
         }).then(() => {
-          // Reset semua form state
+          // Reset form state
           setFormData({
             instansi: "",
             nama_ketua: "",
             email: "",
             jumlah_anggota: "",
           });
-          
+
           // Reset file state
           setFiles({
             surat_pengantar: null,
             surat_balasan: null,
           });
-          
+
           // Reset file inputs
           const fileInputs = document.querySelectorAll('input[type="file"]');
-          fileInputs.forEach(input => {
-            input.value = '';
+          fileInputs.forEach((input) => {
+            input.value = "";
           });
-       
-          // Redirect ke halaman login
-          navigate('/login');
+
+          // Redirect to login
+          navigate("/registerPeserta");
         });
-       }
+      }
     } catch (error) {
       console.error("Error detail:", error);
-      setError(
-        error.response?.data?.error || "Terjadi kesalahan saat mendaftar"
-      );
+      
+      // Show error SweetAlert
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi Kesalahan',
+        html: `
+          <div class="p-4">
+            <p class="text-gray-800">
+              ${error.response?.data?.error || "Terjadi kesalahan saat mendaftar"}
+            </p>
+            <div class="mt-3 text-sm text-gray-600">
+              Silakan coba lagi atau hubungi administrator jika masalah berlanjut.
+            </div>
+          </div>
+        `,
+        customClass: {
+          popup: 'custom-swal-popup',
+          title: 'custom-swal-title text-xl font-bold text-gray-800 mb-4',
+        },
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#2563eb',
+      });
+      
+      setError(error.response?.data?.error || "Terjadi kesalahan saat mendaftar");
     } finally {
       setLoading(false);
     }
@@ -149,24 +222,24 @@ const RegisterKelompok = () => {
           alt="Background"
         />
 
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-white/10 items-center backdrop-blur-md text-center w-[80%] h-[60%] sm:w-[60%] px-6 py-4 rounded-lg shadow-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <div className="bg-white/10 items-center backdrop-blur-md text-center w-[50%] h-[50%] sm:w-[50%] px-6 py-4 rounded-lg shadow-lg">
             <img
               src={logo}
               alt="Logo"
               className="h-25 w-25 object-contain mx-auto mt-7"
             />
-            <h1 className="text-4xl font-bold text-white italic mt-7">
-              Badan Pusat Statistik
+            <h1 className="text-3xl font-bold text-white italic mt-7">
+              BADAN PUSAT STATISTIK
             </h1>
-            <h1 className="text-4xl font-bold text-white italic">
-              Sumatera Barat
+            <h1 className="text-3xl font-bold text-white italic">
+              PROVINSI SUMATERA BARAT
             </h1>
             <div className="mt-10 text-white font-small text-sm px-5 text-start">
-              Daftarkan diri Anda untuk mengikuti program magang yang bermanfaat di
-              Badan Pusat Statistik Sumatera Barat.
+              Daftarkan diri Anda untuk mengikuti program magang yang bermanfaat
+              di Badan Pusat Statistik Sumatera Barat.
             </div>
-            <div className="mt-20 text-white font-small text-sm px-5 text-start">
+            <div className="mt-20 text-white font-small text-sm px-5 py-10 text-start">
               <p>Sudah Register Kelompok? Klik disini </p>
               <Link
                 to="/registerPeserta"
