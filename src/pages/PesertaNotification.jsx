@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const AdminNotifications = () => {
+const PesertaNotification = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,7 +26,7 @@ const AdminNotifications = () => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:3000/admin/list-notif", {
+      const response = await axios.get("http://localhost:3000/peserta/notif-peserta", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -48,7 +48,7 @@ const AdminNotifications = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.put(
-        `http://localhost:3000/admin/mark-one/${notificationId}/read`,
+        `http://localhost:3000/peserta/mark-one/${notificationId}/read`,
         {},
         {
           headers: {
@@ -134,12 +134,12 @@ const AdminNotifications = () => {
       <div className="flex-1 ml-[250px] mx-auto h-screen">
         <Navbar />
         <div className="p-[100px]">
-          <div className="bg-white rounded-lg shadow-lg mt-10">
+          <div className="bg-white rounded-lg shadow-lg">
             {/* Header */}
-            <div className="p-9 border-b border-gray-200">
+            <div className="p-9 border-b border-gray-200 mt-10">
               <div className="flex items-center gap-3">
                 <div>
-                  <h1 className="text-3xl font-bold text-blue-600">
+                  <h1 className="text-2xl font-bold text-blue-600">
                     Notifikasi
                   </h1>
                   <p className="text-sm text-gray-500">
@@ -315,4 +315,4 @@ const AdminNotifications = () => {
   );
 };
 
-export default AdminNotifications;
+export default PesertaNotification;

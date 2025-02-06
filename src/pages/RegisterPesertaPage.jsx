@@ -86,26 +86,31 @@ const RegisterPesertaPage = () => {
           className="h-full w-full object-cover"
           alt="Background"
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-white/10 backdrop-blur-md text-center w-4/5 md:w-3/5 p-6 rounded-lg shadow-lg">
-            <img src={logo} alt="Logo" className="h-24 w-auto mx-auto mt-6" />
-            <h1 className="text-4xl font-bold text-white italic mt-6">
-              Badan Pusat Statistik
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <div className="bg-white/10 items-center backdrop-blur-md text-center w-[50%] h-[50%] sm:w-[50%] px-6 py-4 rounded-lg shadow-lg">
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-25 w-25 object-contain mx-auto mt-7"
+            />
+            <h1 className="text-3xl font-bold  text-white italic mt-7">
+              BADAN PUSAT STATISTIK
             </h1>
-            <h1 className="text-4xl font-bold text-white italic">
-              Sumatera Barat
+            <h1 className="text-3xl font-bold text-white italic">
+              PROVINSI SUMATERA BARAT
             </h1>
-            <p className="mt-8 text-white text-sm px-4 text-left">
+            <div className="mt-10 text-white font-small text-sm px-5 text-start">
               Daftarkan diri Anda untuk mengikuti program magang yang bermanfaat
               di Badan Pusat Statistik Sumatera Barat.
-            </p>
-            <div className="mt-16 text-white text-sm px-4 text-left">
-              <p>
-                Sudah Punya Akun?{" "}
-                <Link to="/login" className="font-medium hover:underline">
-                  Login
-                </Link>
-              </p>
+            </div>
+            <div className="mt-20 text-white font-small text-sm px-5 py-10 text-start">
+              <p>Sudah Register Kelompok? Klik disini </p>
+              <Link
+                to="/login"
+                className="text-white font-medium hover:underline"
+              >
+                Login
+              </Link>
             </div>
           </div>
         </div>
@@ -114,7 +119,7 @@ const RegisterPesertaPage = () => {
       <div className="bg-blue-50">
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-            <h1 className="text-3xl text-blue-600 font-bold mb-8 text-center">
+            <h1 className="text-3xl text-blue-premier font-bold mb-8 text-center">
               Register Peserta
             </h1>
 
@@ -144,11 +149,11 @@ const RegisterPesertaPage = () => {
               />
 
               <Input
-                label="NIM"
+                label="NIM / NISN"
                 name="nim"
                 value={formData.nim}
                 onChange={handleChange}
-                placeholder="Masukkan NIM"
+                placeholder="Masukkan NIM / NISN"
                 required
               />
 

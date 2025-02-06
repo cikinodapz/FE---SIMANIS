@@ -12,6 +12,17 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Search,
+  Users,
+  UserCheck,
+  UserMinus,
+  Building2,
+  FileSearch,
+  MonitorIcon,
+  Share2Icon,
+  WrenchIcon,
+  HelpCircle,
+  Trash2
 } from "lucide-react";
 
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
@@ -106,7 +117,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8 border-b pb-4">
           <div>
-            <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">
               Detail Biodata Peserta
             </h3>
             <p className="text-gray-500 mt-1">
@@ -318,7 +329,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
             <div className="space-y-3">
               <InfoItem label="Nama" value={biodata.nama} />
               <InfoItem label="Nama Panggilan" value={biodata.nama_penggilan} />
-              <InfoItem label="NIM" value={biodata.nim} />
+              <InfoItem label="NIM / NISN" value={biodata.nim} />
               <InfoItem label="Jurusan" value={biodata.jurusan} />
               <InfoItem label="Email" value={biodata.email} />
               <InfoItem label="Tempat Lahir" value={biodata.tempat_lahir} />
@@ -421,7 +432,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 bg-teal-100 rounded-lg">
                 <svg
-                  className="w-5 h-5 text-green-600"
+                  className="w-5 h-5 text-teal-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -476,9 +487,9 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           {/* Riwayat Pendidikan */}
           <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-indigo-100 rounded-lg">
+              <div className="p-2 bg-blue-100 rounded-lg">
                 <svg
-                  className="w-5 h-5 text-indigo-600"
+                  className="w-5 h-5 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -509,7 +520,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                     key={index}
                     className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                   >
-                    <h5 className="font-semibold text-indigo-600 mb-2">
+                    <h5 className="font-semibold text-blue-600 mb-2">
                       Pendidikan {index + 1}
                     </h5>
                     <div className="space-y-2">
@@ -559,25 +570,50 @@ const ListPesertaMagang = () => {
 
   // Add pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
+
+  // Modifikasi useEffect untuk mengambil data
+  const [statusFilter, setStatusFilter] = useState("");
+  const [unitKerjaFilter, setUnitKerjaFilter] = useState("");
+  const [divisiStats, setDivisiStats] = useState([]);
+
+  // Helper function untuk menghitung jumlah peserta per divisi
+  const getDivisiCount = (divisi) => {
+    return (
+      divisiStats.find(
+        (stat) =>
+          stat.unit_kerja === divisi &&
+          (!statusFilter || stat.status_peserta === statusFilter)
+      )?._count?.id || 0
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        const response = await axios.get(
-          "http://localhost:3000/admin/list-biodata",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        let url = "http://localhost:3000/admin/list-biodata";
+
+        // Tambahkan query parameters
+        const params = new URLSearchParams();
+        if (statusFilter) params.append("status_peserta", statusFilter);
+        if (unitKerjaFilter) params.append("unit_kerja", unitKerjaFilter);
+
+        const finalUrl = `${url}?${params.toString()}`;
+
+        const response = await axios.get(finalUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.data.biodatas) {
           setDaftarPesertaMagang(response.data.biodatas);
           setSortedPesertaMagang(response.data.biodatas);
+        }
+        if (response.data.divisiStats) {
+          setDivisiStats(response.data.divisiStats);
         }
       } catch (error) {
         console.error("Gagal mengambil data:", error);
@@ -586,7 +622,7 @@ const ListPesertaMagang = () => {
     };
 
     fetchData();
-  }, []);
+  }, [statusFilter, unitKerjaFilter]);
 
   useEffect(() => {
     handleSort(sortOrder);
@@ -638,10 +674,16 @@ const ListPesertaMagang = () => {
     setTimeout(() => setAlert({ show: false, message: "", type: "" }), 5000);
   };
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const handleGenerateSertifikat = async (pesertaId) => {
     try {
+      setIsGenerating(true);
       setLoading((prev) => ({ ...prev, [pesertaId]: true }));
       const token = localStorage.getItem("accessToken");
+
+      // Simulasi delay untuk loading screen (bisa dihapus di production)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const response = await axios.post(
         `http://localhost:3000/admin/generate-sertifikat/${pesertaId}`,
@@ -653,27 +695,42 @@ const ListPesertaMagang = () => {
         }
       );
 
-      Swal.fire({
+      // Tunggu loading screen selesai sebelum menampilkan success message
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Tampilkan success message dengan SweetAlert2
+      await Swal.fire({
         icon: "success",
-        title: "Selamat! 🎉",
-        text: "Sertifikat Anda telah berhasil dibuat! 🏆 Terima kasih atas kontribusinya! ⭐",
-        timer: 2500,
+        title: "Sertifikat Berhasil Dibuat! 🎉",
+        html: `
+        <div class="space-y-4">
+          <div class="flex items-center justify-center">
+            <svg class="w-16 h-16 text-green-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p class="text-gray-600">Selamat! Sertifikat telah berhasil dibuat.</p>
+          <div class="text-sm text-blue-600 mt-2">
+            Dokumen ini mencatat pencapaian dan kerja keras selama program magang.
+          </div>
+        </div>
+      `,
+        timer: 3000,
         timerProgressBar: true,
         showConfirmButton: true,
-        confirmButtonText: "OK",
+        confirmButtonText: "Selesai",
         confirmButtonColor: "#3b82f6",
-        iconColor: "#3b82f6",
         customClass: {
           popup: "animate__animated animate__fadeInDown",
         },
         backdrop: `
-          rgba(59, 130, 246, 0.1)
-          left top
-          no-repeat
-        `,
+        rgba(59, 130, 246, 0.1)
+        left top
+        no-repeat
+      `,
       });
 
-      // Refresh data setelah generate sertifikat
+      // Refresh data
       const updatedResponse = await axios.get(
         "http://localhost:3000/admin/list-biodata",
         {
@@ -689,7 +746,6 @@ const ListPesertaMagang = () => {
       }
     } catch (error) {
       console.error("Gagal generate sertifikat:", error);
-      // Tampilkan SweetAlert untuk error
       Swal.fire({
         title: "Error!",
         text: error.response?.data?.error || "Gagal generate sertifikat",
@@ -698,6 +754,7 @@ const ListPesertaMagang = () => {
         confirmButtonColor: "#d33",
       });
     } finally {
+      setIsGenerating(false);
       setLoading((prev) => ({ ...prev, [pesertaId]: false }));
       setConfirmDialog({ isOpen: false, pesertaId: null, pesertaName: "" });
     }
@@ -722,21 +779,289 @@ const ListPesertaMagang = () => {
     });
   };
 
-  // Tambahkan fungsi download
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const DownloadLoadingScreen = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
+          <div className="loading-bar h-full bg-blue-600"></div>
+        </div>
+
+        <div className="w-20 h-20 mb-4 relative">
+          <div className="spin-slow absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+          <div className="spin-fast absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent"></div>
+          <div className="absolute inset-2 flex items-center justify-center">
+            <Download className="w-10 h-10 text-blue-600 pulse-icon" />
+          </div>
+        </div>
+
+        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
+          Downloading Sertifikat
+        </h3>
+        <p className="text-gray-600 text-center mb-4">
+          Mohon tunggu sebentar, sistem sedang memproses download sertifikat
+          Anda...
+        </p>
+
+        <div className="flex gap-1">
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "0ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "200ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "400ms" }}
+          ></div>
+        </div>
+
+        <style jsx>{`
+          @keyframes loading {
+            0% {
+              width: 0%;
+            }
+            100% {
+              width: 100%;
+            }
+          }
+
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.7;
+              transform: scale(0.95);
+            }
+          }
+
+          @keyframes bounce {
+            0%,
+            100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-4px);
+            }
+          }
+
+          .loading-bar {
+            animation: loading 2s ease-in-out infinite;
+          }
+
+          .spin-slow {
+            animation: spin 3s linear infinite;
+          }
+
+          .spin-fast {
+            animation: spin 1.5s linear infinite;
+          }
+
+          .pulse-icon {
+            animation: pulse 2s ease-in-out infinite;
+          }
+
+          .pulse-text {
+            animation: pulse 1.5s ease-in-out infinite;
+          }
+
+          .loading-dot {
+            animation: bounce 1s infinite;
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+
+  // Add this DeleteConfirmDialog component near your other dialog components
+  const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-red-100 p-3 rounded-full">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+            </div>
+          </div>
+          <h3 className="text-lg font-semibold text-center mb-2">
+            Hapus Peserta
+          </h3>
+          <p className="text-gray-600 text-center mb-6">
+            Apakah Anda yakin ingin menghapus peserta{" "}
+            <span className="font-semibold">{pesertaName}</span>? Tindakan ini
+            tidak dapat dibatalkan.
+          </p>
+          <div className="flex justify-center space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Batal
+            </button>
+            <button
+              onClick={onConfirm}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            >
+              Hapus
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Add these state variables and functions in your ListPesertaMagang component
+  const [deleteDialog, setDeleteDialog] = useState({
+    isOpen: false,
+    pesertaId: null,
+    pesertaName: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const openDeleteDialog = (pesertaId, pesertaName) => {
+    setDeleteDialog({
+      isOpen: true,
+      pesertaId,
+      pesertaName,
+    });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialog({
+      isOpen: false,
+      pesertaId: null,
+      pesertaName: "",
+    });
+  };
+
+  const handleDeletePeserta = async () => {
+    try {
+      setIsDeleting(true);
+      const token = localStorage.getItem("accessToken");
+
+      await axios.delete(
+        `http://localhost:3000/admin/delete-peserta/${deleteDialog.pesertaId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Show success message
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil Menghapus Peserta",
+        text: "Data peserta telah dihapus secara permanen",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Refresh data
+      const response = await axios.get(
+        "http://localhost:3000/admin/list-biodata",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.biodatas) {
+        setDaftarPesertaMagang(response.data.biodatas);
+        setSortedPesertaMagang(response.data.biodatas);
+      }
+    } catch (error) {
+      console.error("Gagal menghapus peserta:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menghapus Peserta",
+        text:
+          error.response?.data?.error ||
+          "Terjadi kesalahan saat menghapus peserta",
+      });
+    } finally {
+      setIsDeleting(false);
+      closeDeleteDialog();
+    }
+  };
+
+  // Add the Loading Screen for delete operation
+  const DeleteLoadingScreen = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
+          <div className="loading-bar h-full bg-red-600"></div>
+        </div>
+
+        <div className="w-20 h-20 mb-4 relative">
+          <div className="spin-slow absolute inset-0 border-4 border-red-200 rounded-full"></div>
+          <div className="spin-fast absolute inset-0 border-4 border-red-600 rounded-full border-t-transparent"></div>
+          <div className="absolute inset-2 flex items-center justify-center">
+            <AlertCircle className="w-10 h-10 text-red-600 pulse-icon" />
+          </div>
+        </div>
+
+        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
+          Menghapus Peserta
+        </h3>
+        <p className="text-gray-600 text-center mb-4">
+          Mohon tunggu sebentar, sistem sedang menghapus data peserta...
+        </p>
+
+        <div className="flex gap-1">
+          <div
+            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
+            style={{ animationDelay: "0ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
+            style={{ animationDelay: "200ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
+            style={{ animationDelay: "400ms" }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  );
+
   const handleDownload = async (pesertaId) => {
     try {
+      setIsDownloading(true);
       const token = localStorage.getItem("accessToken");
+
+      // Simulasi delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const response = await axios.get(
         `http://localhost:3000/admin/download-sertifikat/${pesertaId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: "blob", // Penting untuk menerima file
+          responseType: "blob",
         }
       );
 
-      // Buat blob URL dan download
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -746,6 +1071,15 @@ const ListPesertaMagang = () => {
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
+
+      // Tampilkan success message
+      await Swal.fire({
+        icon: "success",
+        title: "Download Berhasil! 🎉",
+        text: "Sertifikat telah berhasil diunduh",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error downloading sertifikat:", error);
       Swal.fire({
@@ -753,11 +1087,153 @@ const ListPesertaMagang = () => {
         title: "Gagal Download",
         text: error.response?.data?.message || "Gagal mendownload sertifikat",
       });
+    } finally {
+      setIsDownloading(false);
     }
   };
 
-  const filteredPesertaMagang = sortedPesertaMagang.filter((peserta) =>
-    peserta.nama.toLowerCase().includes(searchTerm.toLowerCase())
+  const LoadingScreen = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
+        {/* Progress bar di bagian atas */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
+          <div className="loading-bar h-full bg-blue-600"></div>
+        </div>
+
+        {/* Icon animasi */}
+        <div className="w-20 h-20 mb-4 relative">
+          <div className="spin-slow absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+          <div className="spin-fast absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent"></div>
+          <div className="absolute inset-2 flex items-center justify-center">
+            <svg
+              className="w-10 h-10 text-blue-600 pulse-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {/* Teks loading */}
+        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
+          Generating Sertifikat
+        </h3>
+        <p className="text-gray-600 text-center mb-4">
+          Mohon tunggu sebentar, sistem sedang memproses sertifikat Anda...
+        </p>
+
+        {/* Loading dots */}
+        <div className="flex gap-1">
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "0ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "200ms" }}
+          ></div>
+          <div
+            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            style={{ animationDelay: "400ms" }}
+          ></div>
+        </div>
+
+        <style jsx>{`
+          @keyframes loading {
+            0% {
+              width: 0%;
+            }
+            100% {
+              width: 100%;
+            }
+          }
+
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.7;
+              transform: scale(0.95);
+            }
+          }
+
+          @keyframes bounce {
+            0%,
+            100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-4px);
+            }
+          }
+
+          .loading-bar {
+            animation: loading 2s ease-in-out infinite;
+          }
+
+          .spin-slow {
+            animation: spin 3s linear infinite;
+          }
+
+          .spin-fast {
+            animation: spin 1.5s linear infinite;
+          }
+
+          .pulse-icon {
+            animation: pulse 2s ease-in-out infinite;
+          }
+
+          .pulse-text {
+            animation: pulse 1.5s ease-in-out infinite;
+          }
+
+          .loading-dot {
+            animation: bounce 1s infinite;
+          }
+
+          .loading-screen-enter {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+
+          .loading-screen-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 300ms, transform 300ms;
+          }
+
+          .loading-screen-exit {
+            opacity: 1;
+            transform: scale(1);
+          }
+
+          .loading-screen-exit-active {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 300ms, transform 300ms;
+          }
+        `}</style>
+      </div>
+    </div>
   );
 
   return (
@@ -770,7 +1246,7 @@ const ListPesertaMagang = () => {
             <div
               className={`mb-4 p-4 rounded-lg flex items-center ${
                 alert.type === "success"
-                  ? "bg-green-100 border border-green-400 text-green-700"
+                  ? "bg-teal-100 border border-teal-400 text-teal-700"
                   : "bg-red-100 border border-red-400 text-red-700"
               }`}
             >
@@ -786,51 +1262,221 @@ const ListPesertaMagang = () => {
             pesertaName={confirmDialog.pesertaName}
           />
 
-          <div className="shadow-lg p-6 bg-white rounded-md flex flex-col flex-grow">
-            <div>
-              <h1 className="text-blue-600/90 text-3xl font-bold">
-                Daftar Peserta Magang
-              </h1>
-              <p className="text-sm text-gray-500">Semua Peserta Magang</p>
+          <div className="shadow-lg p-8 bg-white rounded-xl flex flex-col flex-grow mt-10">
+            {/* Header Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-blue-600/90 text-3xl font-bold">
+                    Daftar Peserta Magang
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Kelola data peserta magang
+                  </p>
+                </div>
+              </div>
 
-              <div className="my-4 flex items-center justify-center space-x-4">
+              {/* Search Bar */}
+              <div className="relative mb-8">
                 <Input
                   type="text"
-                  placeholder="Cari berdasarkan Nama Peserta"
+                  placeholder="Cari berdasarkan Nama Peserta..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  px={20}
-                  className="w-full text-center max-w-lg border border-blue-600/90 rounded-lg"
+                  className=" w-full text-center max-w-2xl mx-auto block shadow-sm border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
 
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="p-3 border bg-green border-gray-300 text-white font-medium rounded-md"
-                >
-                  <option value="newest" className="text-black bg-white">
-                    Terbaru
-                  </option>
-                  <option value="oldest" className="text-black bg-white">
-                    Terlama
-                  </option>
-                </select>
+              {/* Filters Container */}
+              {/* /*SINIII WARNA KOTAKNYA */}
+              <div className="bg-blue-300 p-6 rounded-xl mb-6">
+                <div className="space-y-6">
+                  {/* Status Filters */}
+                  <div>
+                    <div className="flex flex-col items-center">
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                        Status Peserta
+                      </h3>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setStatusFilter("")}
+                          className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                            statusFilter === ""
+                              ? "bg-blue-600 text-white shadow-md"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                          }`}
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>Semua</span>
+                        </button>
+                        <button
+                          onClick={() => setStatusFilter("Aktif")}
+                          className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                            statusFilter === "Aktif"
+                              ? "bg-teal-600 text-white shadow-md"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                          }`}
+                        >
+                          <UserCheck className="w-4 h-4" />
+                          <span>Aktif</span>
+                        </button>
+                        <button
+                          onClick={() => setStatusFilter("Nonaktif")}
+                          className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                            statusFilter === "Nonaktif"
+                              ? "bg-red-600 text-white shadow-md"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                          }`}
+                        >
+                          <UserMinus className="w-4 h-4" />
+                          <span>Nonaktif</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Unit Kerja Filters */}
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      Unit Kerja
+                    </h3>
+                    <div className="flex justify-center flex-wrap gap-3">
+                      <button
+                        onClick={() => setUnitKerjaFilter("")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === ""
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <Building2 className="w-4 h-4" />
+                        <span>Semua</span>
+                      </button>
+
+                      {/* Umum */}
+                      <button
+                        onClick={() => setUnitKerjaFilter("Umum")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === "Umum"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>Umum</span>
+                      </button>
+
+                      {/* IT */}
+                      <button
+                        onClick={() => setUnitKerjaFilter("IT")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === "IT"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <MonitorIcon className="w-4 h-4" />
+                        <span>IT</span>
+                      </button>
+
+                      {/* Diseminasi */}
+                      <button
+                        onClick={() => setUnitKerjaFilter("Diseminasi")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === "Diseminasi"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <Share2Icon className="w-4 h-4" />
+                        <span>Diseminasi</span>
+                      </button>
+
+                      {/* Teknis */}
+                      <button
+                        onClick={() => setUnitKerjaFilter("Teknis")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === "Teknis"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <WrenchIcon className="w-4 h-4" />
+                        <span>Teknis</span>
+                      </button>
+
+                      {/* Tidak Ditentukan */}
+                      <button
+                        onClick={() => setUnitKerjaFilter("Tidak Ditentukan")}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
+                          unitKerjaFilter === "Tidak Ditentukan"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                        }`}
+                      >
+                        <HelpCircle className="w-4 h-4" />
+                        <span>Tidak Ditentukan</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center mt-4">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-100 shadow-sm px-8 py-3 rounded-xl flex items-center gap-3">
+                  <div className="bg-blue-500/10 p-2 rounded-lg">
+                    <FileSearch className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-600">
+                    <span className="font-medium">Menampilkan</span>
+                    <span className="px-3 py-1 bg-white rounded-lg font-bold text-blue-600 shadow-sm">
+                      {currentItems.length}
+                    </span>
+                    <span className="font-medium">dari</span>
+                    <span className="px-3 py-1 bg-white rounded-lg font-bold text-blue-600 shadow-sm">
+                      {filteredPesertaMagangPaging.length}
+                    </span>
+                    <span className="font-medium">peserta</span>
+                    {statusFilter && (
+                      <span className="flex items-center gap-1">
+                        <span>dengan status</span>
+                        <span
+                          className={`px-3 py-1 rounded-lg font-semibold ${
+                            statusFilter === "Aktif"
+                              ? "bg-teal-100 text-teal-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {statusFilter}
+                        </span>
+                      </span>
+                    )}
+                    {unitKerjaFilter && (
+                      <span className="flex items-center gap-1">
+                        <span>di divisi</span>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg font-semibold">
+                          {unitKerjaFilter}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-
-            <table className="w-full border-collapse text-center mt-10">
+            <table className="w-full border-collapse text-center">
               <thead>
                 <tr className="bg-blue-600/90 text-white border-rounded-lg">
                   <th className="p-2 border border-gray-300">No</th>
                   <th className="p-2 border border-gray-300">Nama Peserta</th>
-                  <th className="p-2 border border-gray-300">NIM</th>
+                  <th className="p-2 border border-gray-300">NIM / NISN</th>
                   <th className="p-2 border border-gray-300">Jurusan</th>
                   <th className="p-2 border border-gray-300">Unit Kerja</th>
-                  <th className="p-2 border border-gray-300">Detail</th>
                   <th className="p-2 border border-gray-300">Status</th>
                   <th className="p-2 border border-gray-300">Sertifikat</th>
-                  <th className="p-2 border border-gray-300">Download</th>{" "}
-                  {/* Kolom baru */}
+                  <th className="p-2 border border-gray-300">Download</th>
+                  <th className="p-2 border border-gray-300">Detail</th>
+                  <th className="p-2 border border-gray-300">Aksi</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -849,24 +1495,14 @@ const ListPesertaMagang = () => {
                       {peserta.jurusan}
                     </td>
                     <td className="p-2 border border-gray-300">
-                      {peserta.unit_kerja}
+                      {peserta.unit_kerja || "Tidak Ditentukan"}
                     </td>
-                    <td className="p-6 border flex items-center justify-center space-x-4">
-                      <div
-                        className="p-2 rounded-lg bg-white shadow-lg cursor-pointer hover:bg-blue-50 transition-all duration-200"
-                        onClick={() => {
-                          setSelectedBiodata(peserta);
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        <Info className="text-blue-500" />
-                      </div>
-                    </td>
+                  
                     <td className="p-2 border border-gray-300">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${
                           peserta.status_peserta === "Aktif"
-                            ? "bg-teal-100 text-green-800"
+                            ? "bg-teal-100 text-teal-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
@@ -910,6 +1546,29 @@ const ListPesertaMagang = () => {
                         </button>
                       )}
                     </td>
+                    <td className="p-6 border flex items-center justify-center space-x-4">
+                      <div
+                        className="p-2 rounded-lg bg-blue-100 cursor-pointer hover:bg-blue-50 transition-all duration-200"
+                        onClick={() => {
+                          setSelectedBiodata(peserta);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Info className="text-blue-500" />
+                      </div>
+                    </td>
+                    <td className="p-2 border border-gray-300">
+                      <button
+                        onClick={() =>
+                          openDeleteDialog(peserta.id, peserta.nama)
+                        }
+                        className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium 
+      bg-red-100 text-red-700 hover:bg-red-200 transition-colors duration-200"
+                      >
+                        <Trash2 className="w-6 h-6 mr-1" />
+                      </button>
+                    </td>
+                  
                   </tr>
                 ))}
               </tbody>
@@ -1005,6 +1664,16 @@ const ListPesertaMagang = () => {
         }}
         biodata={selectedBiodata}
       />
+      {isGenerating && <LoadingScreen />}
+      {isDownloading && <DownloadLoadingScreen />}
+      {/* Tambahkan di sini */}
+      <DeleteConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={closeDeleteDialog}
+        onConfirm={handleDeletePeserta}
+        pesertaName={deleteDialog.pesertaName}
+      />
+      {isDeleting && <DeleteLoadingScreen />}
     </div>
   );
 };

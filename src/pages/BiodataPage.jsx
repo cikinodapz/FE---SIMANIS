@@ -364,7 +364,7 @@ const BiodataPage = () => {
         <Navbar />
         <div className="p-8">
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-8 mt-24">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
               Biodata Peserta
             </h1>
@@ -590,7 +590,7 @@ const BiodataPage = () => {
                     <option value="Umum">Umum</option>
                     <option value="IT">IT</option>
                     <option value="Diseminasi">Diseminasi</option>
-                    <option value="Teknikal">Teknikal</option>
+                    <option value="Teknis">Teknis</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

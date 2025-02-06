@@ -20,6 +20,12 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import FormTugasByPegawai from "./pages/FormTugasByPegawai"
 import Dashboardpeserta from "./pages/DashboardPeserta";
 import AdminNotifications from "./pages/AdminNotification";
+import PesertaNotification from "./pages/PesertaNotification";
+import Logbook from "./pages/Logbook";
+import AdminLogbook from "./pages/LogbookMonitoring";
+import ProfilePhoto from "./pages/ProfileFoto";
+import ProfilePegawai from "./pages/ProfileFoto";
+import Profile from "./pages/MyProfile";
 
 
 const App = () => {
@@ -35,22 +41,29 @@ const App = () => {
        <Route path="/registerPeserta" element={<RegisterPeserta />} />
        <Route path="/unauthorized" element={<UnauthorizedPage />} />
        
-
        {/* Admin Routes */}
        <Route path="/dashboard" element={<ProtectedRoute roles={['Admin']}><Dashboard /></ProtectedRoute>} />
        <Route path="/list-pendaftar" element={<ProtectedRoute roles={['Admin']}><ListPendaftar /></ProtectedRoute>} />
        <Route path="/list-peserta-magang" element={<ProtectedRoute roles={['Admin']}><ListPesertaMagang /></ProtectedRoute>} />
        <Route path="/form-tugas" element={<ProtectedRoute roles={['Admin']}><FormTugas /></ProtectedRoute>} />
+       <Route path="/logbook-peserta" element={<ProtectedRoute roles={['Admin']}><AdminLogbook /></ProtectedRoute>} />
+       
        <Route path="/arsip-peserta-magang" element={<ProtectedRoute roles={['Admin']}><ArsipPesertaMagang /></ProtectedRoute>} />
        <Route path="/admin-management" element={<ProtectedRoute roles={['Admin']}><AdminManagement /></ProtectedRoute>} />
        <Route path="/sertifikat" element={<ProtectedRoute roles={['Admin']}><TemplateManagement /></ProtectedRoute>} />
        <Route path="/notifadmin" element={<ProtectedRoute roles={['Admin']}><AdminNotifications /></ProtectedRoute>} />
+       <Route path="/profile" element={<ProtectedRoute roles={['Admin','Pegawai']}><ProfilePegawai /></ProtectedRoute>} />
+
 
        {/* Peserta Routes */}
+       <Route path="/myprofile" element={<ProtectedRoute roles={['User']}><Profile /></ProtectedRoute>} />
        <Route path="/biodata" element={<ProtectedRoute roles={['User']}><BiodataPage /></ProtectedRoute>} />
        <Route path="/daftarTugas" element={<ProtectedRoute roles={['User']}><DaftarTugas /></ProtectedRoute>} />
+       <Route path="/logbookPeserta" element={<ProtectedRoute roles={['User']}><Logbook /></ProtectedRoute>} />
        <Route path="/sertifikatPeserta" element={<ProtectedRoute roles={['User']}><SertifikatPeserta /></ProtectedRoute>} />
        <Route path="/statistik" element={<ProtectedRoute roles={['User']}><Dashboardpeserta /></ProtectedRoute>} />
+       <Route path="/notifpeserta" element={<ProtectedRoute roles={['User']}><PesertaNotification /></ProtectedRoute>} />
+
 
 
        {/*pegawai Routes*/}
