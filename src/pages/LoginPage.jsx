@@ -1,9 +1,9 @@
 import { useState } from "react";
-import blue from "../assets/blue.jpg";
+import blue from "/assets/blue.jpg";
 import Input from "../components/Inputglass";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
-import logo from "../assets/logo.png";
+import logo from "/assets/logo.png";
 import axios from "axios";
 import Swal from "sweetalert2";
 

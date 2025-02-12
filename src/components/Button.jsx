@@ -8,7 +8,7 @@ const Button = ({ label, children, onClick, type = "button", className, variant 
     danger: "bg-red-500 hover:bg-white font-medium border-2 hover:border-red-500 hover:text-red-500",
     oren: "bg-oren hover:bg-white border-2 border-oren hover:text-oren hover:border-oren",
     white: "bg-white text-blue-800 hover:font-bold",
-    blue: "bg-blue-sky hover:bg-white hover:border-blue-sky border-2 hover:text-blue-sky font-medium",
+    blue: "bg-blue-sky hover:bg-white hover:border-blue-sky hover:text-blue-sky font-medium",
     yellow:"bg-yellow-500 hover:bg-white border-2 hover:border-yellow-500 hover:text-yellow-500",
     teal:"bg-teal-100 text-teal-700 border-teal-500"
   };

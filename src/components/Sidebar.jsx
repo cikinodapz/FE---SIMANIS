@@ -73,7 +73,7 @@ const Sidebar = () => {
   ];
 
   const pesertaMenuItems = [
-    { title: "Statistik", icon: BarChart3, route: "/statistik" },
+    { title: "Dashboard", icon: BarChart3, route: "/statistik" },
     { title: "Profile", icon: UserCircle, route: "/myprofile" },
     { title: "Biodata", icon: User, route: "/biodata" },
     { title: "Tugas", icon: ClipboardList, route: "/daftarTugas" },

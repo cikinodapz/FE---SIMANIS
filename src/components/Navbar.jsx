@@ -196,7 +196,7 @@ const Navbar = ({ user }) => {
                             translate-x-[-200%] group-hover:translate-x-[200%] 
                             transition-transform duration-700 skew-x-12 rounded-3xl" />
               <img
-                src="src/assets/logo.png"
+                src="/assets/logo.png"
                 alt="Logo"
                 className="w-10 md:w-14 h-auto mr-2 transition-transform duration-500 group-hover:scale-110"
               />

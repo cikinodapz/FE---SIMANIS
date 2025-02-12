@@ -1,5 +1,5 @@
 import React from "react";
-import BPS from '../assets/logo.png';
+import BPS from '/assets/logo.png';
 
 const Logo = () => {
   return (

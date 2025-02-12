@@ -1,25 +1,23 @@
-import useCountUp from '../hooks/useCountUp';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Card = ({ title, deskripsi, textColor, Ikon }) => {
-  const count = useCountUp(parseInt(title, 10)); // Menggunakan custom hook untuk animasi angka
 
+const Card = ({ title, deskripsi, Ikon, iconColor, isCenter }) => {
   return (
-    <div
-      className="flex flex-col bg-white border shadow-lg rounded-xl transition-transform duration-300 ease-in-out items-center justify-center h-full hover:scale-105 active:scale-95"
-    >
-      <div className="p-10 md:p-10 flex flex-col items-center justify-center mt-5 mb-5">
-        <div className="flex items-center justify-center rounded-full shadow-lg border-2 border-blue-500 w-24 h-24 mb-4">
-          {Ikon && <Ikon className="h-16 w-16" />}
+      <motion.div
+        className={`transform transition-all duration-500 
+          ${isCenter ? 'scale-110 z-10' : 'scale-100 opacity-100'}`}
+        whileHover={{ scale: isCenter ? 1.15 : 1.05 }}
+        layout
+      >
+        <div className="flex flex-col items-center bg-white shadow-xl border text-center shadow-sm rounded-3xl p-7">
+          <div className={`flex items-center justify-center rounded-full shadow-lg border-2 w-24 h-24 mb-4 ${iconColor}`}>
+            {Ikon && <Ikon className={`h-16 w-16 ${iconColor}`} />}
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800 font-serif">{title}</h3>
+          <p className="mt-2 text-gray-5900 font-serif">{deskripsi}</p>
         </div>
-
-        <h3 className={`text-8xl font-bold text-center text-shadow-lg ${textColor}`}>
-          {count}
-        </h3>
-
-        <p className="mt-5 text-blue-premier text-center text-3xl font-bold">{deskripsi}</p>
-      </div>
-    </div>
-  );
+      </motion.div>
+    );
 };
 
-export default Card;
+export default Card;     

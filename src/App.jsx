@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes,Navigate } from "react-router-dom";
 import { ProtectedRoute, PublicRoute } from "./components/ProtectedRoutes";
 import RegisterPage from "./pages/RegisterPage";
 import Dashboard from "./pages/Dashboard";
@@ -33,7 +33,7 @@ const App = () => {
    <Router>
      <Routes>
        {/* Public Routes */}
-       <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+       <Route path="/"element={<Navigate to="/landing" replace />}  />
        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
        <Route path="/landing" element={<Landing />} />
