@@ -1,87 +1,128 @@
-const Carrousel = ({Image}) => {
+import React from "react";
+import useCarousel from "../hooks/useCarrousel";
+
+const Carousel = ({ images = [] }) => {
+  const { currentIndex, handleNext, handlePrev } = useCarousel(images.length);
+
   return (
-    <div
-      data-hs-carousel='{
-    "loadingClasses": "opacity-0",
-    "dotsItemClasses": "hs-carousel-active:bg-blue-700 hs-carousel-active:border-blue-700 size-3 border border-gray-400 rounded-full cursor-pointer",
-    "isAutoPlay": true
-  }'
-      className="relative"
-    >
-      <div className="hs-carousel relative overflow-hidden w-full min-h-96 bg-white rounded-lg">
-        <div className="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap transition-transform duration-700 opacity-0">
-          <div className="hs-carousel-slide">
-            <div className="flex justify-center h-full bg-gray-100 p-6">
-              <span className="self-center text-4xl text-gray-800 transition duration-700">
-                {Image}
-              </span>
+    <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
+      <div className="relative overflow-hidden w-full h-full bg-white rounded-lg shadow-md">
+        {/* Slides Container */}
+        <div
+          className="flex transition-transform duration-700 ease-in-out h-full"
+          style={{
+            transform: `translateX(-${currentIndex * 100}%)`,
+          }}
+        >
+          {images.length > 0 ? (
+            images.map((image, index) => (
+              <div 
+                key={index} 
+                className="w-full flex-shrink-0 h-full"
+              >
+                <div className="relative flex justify-center items-center w-full h-full bg-gray-100">
+                  <img
+                    src={image}
+                    alt={`Slide ${index + 1}`}
+                    className="w-full h-full object-cover object-center rounded-lg"
+                    loading="lazy"
+                  />
+                  {/* Optional: Add gradient overlay for better button visibility */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20 pointer-events-none" />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="w-full flex-shrink-0 h-full">
+              <div className="flex justify-center items-center w-full h-full bg-gray-100">
+                <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-gray-800">
+                  No images available
+                </span>
+              </div>
             </div>
-          </div>
-          <div className="hs-carousel-slide">
-            <div className="flex justify-center h-full bg-gray-200 p-6">
-              <span className="self-center text-4xl text-gray-800 transition duration-700">
-               {Image}
-              </span>
-            </div>
-          </div>
-          <div className="hs-carousel-slide">
-            <div className="flex justify-center h-full bg-gray-300 p-6">
-              <span className="self-center text-4xl text-gray-800 transition duration-700">
-                {Image}
-              </span>
-            </div>
-          </div>
+          )}
         </div>
+
+        {/* Navigation Dots */}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 
+                  ${currentIndex === index 
+                    ? 'bg-white scale-125' 
+                    : 'bg-white/50 hover:bg-white/70'}`}
+                onClick={() => {
+                  const newIndex = index;
+                  const direction = newIndex > currentIndex ? 'next' : 'prev';
+                  if (direction === 'next') {
+                    handleNext(newIndex);
+                  } else {
+                    handlePrev(newIndex);
+                  }
+                }}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      <button
-        type="button"
-        className="hs-carousel-prev hs-carousel-disabled:opacity-50 hs-carousel-disabled:pointer-events-none absolute inset-y-0 start-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 focus:outline-none focus:bg-gray-800/10 rounded-s-lg"
-      >
-        <span className="text-2xl" aria-hidden="true">
-          <svg
-            className="shrink-0 size-5"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+      {/* Navigation Buttons */}
+      {images.length > 1 && (
+        <>
+          {/* Previous Button */}
+          <button
+            type="button"
+            onClick={handlePrev}
+            className="absolute top-1/2 -translate-y-1/2 left-2 sm:left-4 p-1.5 sm:p-2 md:p-3
+              bg-white/80 hover:bg-white rounded-full shadow-lg
+              transition-transform duration-300 hover:scale-110
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label="Previous slide"
           >
-            <path d="m15 18-6-6 6-6"></path>
-          </svg>
-        </span>
-        <span className="sr-only">Previous</span>
-      </button>
-      <button
-        type="button"
-        className="hs-carousel-next hs-carousel-disabled:opacity-50 hs-carousel-disabled:pointer-events-none absolute inset-y-0 end-0 inline-flex justify-center items-center w-[46px] h-full text-gray-800 hover:bg-gray-800/10 focus:outline-none focus:bg-gray-800/10 rounded-e-lg"
-      >
-        <span className="sr-only">Next</span>
-        <span className="text-2xl" aria-hidden="true">
-          <svg
-            className="shrink-0 size-5"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m9 18 6-6-6-6"></path>
-          </svg>
-        </span>
-      </button>
+            <svg
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-800"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
 
-      <div className="hs-carousel-pagination flex justify-center absolute bottom-3 start-0 end-0 space-x-2"></div>
+          {/* Next Button */}
+          <button
+            type="button"
+            onClick={handleNext}
+            className="absolute top-1/2 -translate-y-1/2 right-2 sm:right-4 p-1.5 sm:p-2 md:p-3
+              bg-white/80 hover:bg-white rounded-full shadow-lg
+              transition-transform duration-300 hover:scale-110
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label="Next slide"
+          >
+            <svg
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-800"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        </>
+      )}
     </div>
   );
 };
 
-export default Carrousel;
+export default Carousel;

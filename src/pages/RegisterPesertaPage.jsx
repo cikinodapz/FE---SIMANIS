@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import blue from "../assets/blue.jpg";
+import blue from "/assets/blue.jpg";
 import Input from "../components/Inputregispeserta";
 import Button from "../components/Button";
-import logo from "../assets/logo.png";
+import logo from "/assets/logo.png";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
 const RegisterPesertaPage = () => {

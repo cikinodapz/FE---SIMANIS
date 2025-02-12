@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import { Plus, X, Edit2, Trash2, Eye, Check } from "lucide-react";
 import Input from "../components/Input";
 import { format } from "date-fns";
-import bps from "../assets/bps.png";
+import bps from "/assets/bps.png";
 import Swal from "sweetalert2";
 import DOMPurify from "dompurify";
 
