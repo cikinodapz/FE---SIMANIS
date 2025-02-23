@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import Input from "../components/InputBiodata";
-import Button from "../components/Buttonbio";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
-
-
 import {
   User,
   Users,
@@ -16,8 +12,9 @@ import {
   Save,
   Loader2,
   Home,
-  Camera
+  Camera,
 } from "lucide-react";
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const BiodataPage = () => {
   const [formData, setFormData] = useState({
@@ -41,28 +38,17 @@ const BiodataPage = () => {
     jadwal_mulai: "",
     jadwal_selesai: "",
     riwayat_pendidikan: [
-      {
-        nama_sekolah: "",
-        tahun_tempat: "",
-        tempat: "",
-      },
-      {
-        nama_sekolah: "",
-        tahun_tempat: "",
-        tempat: "",
-      },
-      {
-        nama_sekolah: "",
-        tahun_tempat: "",
-        tempat: "",
-      },
+      { nama_sekolah: "", tahun_tempat: "", tempat: "" },
+      { nama_sekolah: "", tahun_tempat: "", tempat: "" },
+      { nama_sekolah: "", tahun_tempat: "", tempat: "" },
     ],
   });
 
-  const [foto, setFoto] = useState(null); // State untuk menyimpan file foto
+  const [foto, setFoto] = useState(null);
+  const [fotoPreview, setFotoPreview] = useState(null);
+  const [existingFoto, setExistingFoto] = useState(null);
 
-  const [fotoPreview, setFotoPreview] = useState(null); // Untuk preview foto yang baru diupload
-  const [existingFoto, setExistingFoto] = useState(null); // Untuk menampilkan foto yang sudah ada
+  const { darkMode } = useContext(DarkModeContext);
 
   useEffect(() => {
     const fetchBiodata = async () => {
@@ -71,39 +57,26 @@ const BiodataPage = () => {
         const response = await axios.get(
           "http://localhost:3000/peserta/get-biodata",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         const biodata = response.data.data;
 
         if (biodata.foto) {
-          // Fetch foto menggunakan axios
           const fotoResponse = await axios.get(
             "http://localhost:3000/peserta/get-foto",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              responseType: "blob", // Penting! Untuk menerima data gambar
-            }
+            { headers: { Authorization: `Bearer ${token}` }, responseType: "blob" }
           );
-
-          // Buat URL dari blob
           const fotoUrl = URL.createObjectURL(fotoResponse.data);
           setExistingFoto(fotoUrl);
         }
 
-        // Update formData dengan data yang diterima
         setFormData((prevData) => ({
           ...prevData,
           nama_penggilan: biodata.nama_penggilan || "",
           tempat_lahir: biodata.tempat_lahir || "",
-          tanggal_lahir: biodata.tanggal_lahir
-            ? biodata.tanggal_lahir.split("T")[0]
-            : "",
+          tanggal_lahir: biodata.tanggal_lahir ? biodata.tanggal_lahir.split("T")[0] : "",
           anak_ke: biodata.anak_ke || "",
           jumlah_saudara: biodata.jumlah_saudara || "",
           ip: biodata.ip || "",
@@ -118,34 +91,24 @@ const BiodataPage = () => {
           alasan: biodata.alasan || "",
           keahlian: biodata.keahlian || "",
           unit_kerja: biodata.unit_kerja || "",
-          jadwal_mulai: biodata.jadwal_mulai
-            ? biodata.jadwal_mulai.split("T")[0]
-            : "",
-          jadwal_selesai: biodata.jadwal_selesai
-            ? biodata.jadwal_selesai.split("T")[0]
-            : "",
+          jadwal_mulai: biodata.jadwal_mulai ? biodata.jadwal_mulai.split("T")[0] : "",
+          jadwal_selesai: biodata.jadwal_selesai ? biodata.jadwal_selesai.split("T")[0] : "",
           riwayat_pendidikan:
             biodata.RiwayatPendidikan?.length > 0
               ? [
                   {
-                    nama_sekolah:
-                      biodata.RiwayatPendidikan[0]?.nama_sekolah || "",
-                    tahun_tempat:
-                      biodata.RiwayatPendidikan[0]?.tahun_tempat || "",
+                    nama_sekolah: biodata.RiwayatPendidikan[0]?.nama_sekolah || "",
+                    tahun_tempat: biodata.RiwayatPendidikan[0]?.tahun_tempat || "",
                     tempat: biodata.RiwayatPendidikan[0]?.tempat || "",
                   },
                   {
-                    nama_sekolah:
-                      biodata.RiwayatPendidikan[1]?.nama_sekolah || "",
-                    tahun_tempat:
-                      biodata.RiwayatPendidikan[1]?.tahun_tempat || "",
+                    nama_sekolah: biodata.RiwayatPendidikan[1]?.nama_sekolah || "",
+                    tahun_tempat: biodata.RiwayatPendidikan[1]?.tahun_tempat || "",
                     tempat: biodata.RiwayatPendidikan[1]?.tempat || "",
                   },
                   {
-                    nama_sekolah:
-                      biodata.RiwayatPendidikan[2]?.nama_sekolah || "",
-                    tahun_tempat:
-                      biodata.RiwayatPendidikan[2]?.tahun_tempat || "",
+                    nama_sekolah: biodata.RiwayatPendidikan[2]?.nama_sekolah || "",
+                    tahun_tempat: biodata.RiwayatPendidikan[2]?.tahun_tempat || "",
                     tempat: biodata.RiwayatPendidikan[2]?.tempat || "",
                   },
                 ]
@@ -174,14 +137,11 @@ const BiodataPage = () => {
     };
 
     fetchBiodata();
-  }, []); // Empty dependency array means this runs once when component mounts
+  }, []);
 
   useEffect(() => {
-    // Membersihkan URL preview ketika komponen unmount
     return () => {
-      if (fotoPreview) {
-        URL.revokeObjectURL(fotoPreview);
-      }
+      if (fotoPreview) URL.revokeObjectURL(fotoPreview);
     };
   }, [fotoPreview]);
 
@@ -191,21 +151,16 @@ const BiodataPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Handle number fields
     if (name === "anak_ke" || name === "jumlah_saudara") {
       const numValue = value === "" ? "" : parseInt(value);
       setFormData((prev) => ({ ...prev, [name]: numValue }));
       return;
     }
-
-    // Handle float field (IP)
     if (name === "ip") {
       const floatValue = value === "" ? "" : parseFloat(value);
       setFormData((prev) => ({ ...prev, [name]: floatValue }));
       return;
     }
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -213,14 +168,8 @@ const BiodataPage = () => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newRiwayat = [...prev.riwayat_pendidikan];
-      newRiwayat[index] = {
-        ...newRiwayat[index],
-        [name]: value,
-      };
-      return {
-        ...prev,
-        riwayat_pendidikan: newRiwayat,
-      };
+      newRiwayat[index] = { ...newRiwayat[index], [name]: value };
+      return { ...prev, riwayat_pendidikan: newRiwayat };
     });
   };
 
@@ -228,7 +177,6 @@ const BiodataPage = () => {
     const file = e.target.files[0];
     if (file) {
       setFoto(file);
-      // Membuat URL preview untuk foto baru
       const previewUrl = URL.createObjectURL(file);
       setFotoPreview(previewUrl);
     }
@@ -239,7 +187,6 @@ const BiodataPage = () => {
   };
 
   const validateForm = () => {
-    // Add basic validation
     if (!formData.nama_penggilan) return "Nama panggilan harus diisi";
     if (!formData.tempat_lahir) return "Tempat lahir harus diisi";
     if (!formData.tanggal_lahir) return "Tanggal lahir harus diisi";
@@ -250,7 +197,6 @@ const BiodataPage = () => {
 
   const handleSubmit = async () => {
     setError("");
-
     const validationError = validateForm();
     if (validationError) {
       Swal.fire({
@@ -265,20 +211,12 @@ const BiodataPage = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-
-      // Create FormData object
       const formDataToSend = new FormData();
       formDataToSend.append("nama_penggilan", formData.nama_penggilan);
       formDataToSend.append("tempat_lahir", formData.tempat_lahir);
       formDataToSend.append("tanggal_lahir", formData.tanggal_lahir);
-      formDataToSend.append(
-        "anak_ke",
-        formData.anak_ke ? String(formData.anak_ke) : ""
-      );
-      formDataToSend.append(
-        "jumlah_saudara",
-        formData.jumlah_saudara ? String(formData.jumlah_saudara) : ""
-      );
+      formDataToSend.append("anak_ke", formData.anak_ke ? String(formData.anak_ke) : "");
+      formDataToSend.append("jumlah_saudara", formData.jumlah_saudara ? String(formData.jumlah_saudara) : "");
       formDataToSend.append("ip", formData.ip ? String(formData.ip) : "");
       formDataToSend.append("nama_ibu", formData.nama_ibu);
       formDataToSend.append("pekerjaan_ibu", formData.pekerjaan_ibu);
@@ -293,15 +231,10 @@ const BiodataPage = () => {
       formDataToSend.append("unit_kerja", formData.unit_kerja);
       formDataToSend.append("jadwal_mulai", formData.jadwal_mulai);
       formDataToSend.append("jadwal_selesai", formData.jadwal_selesai);
-      formDataToSend.append(
-        "riwayat_pendidikan",
-        JSON.stringify(formData.riwayat_pendidikan)
-      );
-      if (foto) {
-        formDataToSend.append("foto", foto);
-      }
+      formDataToSend.append("riwayat_pendidikan", JSON.stringify(formData.riwayat_pendidikan));
+      if (foto) formDataToSend.append("foto", foto);
 
-      const response = await axios.put(
+      await axios.put(
         "http://localhost:3000/peserta/add-biodata",
         formDataToSend,
         {
@@ -320,18 +253,11 @@ const BiodataPage = () => {
         timerProgressBar: true,
         showConfirmButton: false,
         iconColor: "#3b82f6",
-        customClass: {
-          popup: "animate__animated animate__fadeInDown",
-        },
-        backdrop: `
-          rgba(59, 130, 246, 0.1)
-          left top
-          no-repeat
-        `,
+        customClass: { popup: "animate__animated animate__fadeInDown" },
+        backdrop: `rgba(59, 130, 246, 0.1) left top no-repeat`,
       });
     } catch (error) {
       console.error("Error submitting form:", error);
-
       if (error.response?.status === 401) {
         Swal.fire({
           icon: "error",
@@ -342,59 +268,53 @@ const BiodataPage = () => {
         Swal.fire({
           icon: "error",
           title: "Gagal!",
-          text:
-            error.response?.data?.message ||
-            "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
+          text: error.response?.data?.message || "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.",
         });
       }
-
-      setError(
-        error.response?.data?.message ||
-          "Terjadi kesalahan saat menyimpan data. Silakan coba lagi."
-      );
+      setError(error.response?.data?.message || "Terjadi kesalahan saat menyimpan data. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex max-w-[95rem] mx-auto">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-900 transition-colors duration-300">
       <Sidebar />
-      <div className="flex-1 ml-[250px] h-full w-full">
+      <div className="flex-1 md:ml-[250px]">
         <Navbar />
-        <div className="p-8">
+        <div className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8 mt-24">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-500 dark:to-blue-300 bg-clip-text text-transparent">
               Biodata Peserta
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               Lengkapi informasi diri Anda dengan teliti
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r">
+            <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-600 text-red-700 dark:text-red-300 p-4 mb-6 rounded-r">
               {error}
             </div>
           )}
 
-           {/* Main Form Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Main Form Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Data Pribadi */}
-            <div className="bg-white rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-blue-400">
-              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <User className="w-6 h-6 text-blue-500" />
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500">
+              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                  <User className="w-6 h-6 text-blue-500 dark:text-blue-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                   Data Pribadi
                 </h2>
               </div>
 
               {/* Foto Profile Section */}
-              <div className="mb-8 border-b border-gray-200 pb-8">
+              <div className="mb-8 border-b border-gray-200 dark:border-gray-600 pb-8">
                 <div className="flex items-center space-x-6">
                   <div className="relative group">
                     {existingFoto || fotoPreview ? (
@@ -414,10 +334,10 @@ const BiodataPage = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-all duration-200">
+                      <div className="w-32 h-32 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-all duration-200">
                         <label
                           htmlFor="foto-upload"
-                          className="cursor-pointer text-gray-400 hover:text-gray-500"
+                          className="cursor-pointer text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400"
                         >
                           <Camera className="w-8 h-8" />
                         </label>
@@ -432,15 +352,12 @@ const BiodataPage = () => {
                     />
                   </div>
                   <div className="flex-1">
-                    {/* <h3 className="text-lg font-medium text-gray-900 mb-1">
-                      Foto Profil
-                    </h3> */}
-                    <p className="text-sm text-gray-500 mb-3">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                       Unggah foto profil Anda. Pastikan foto terlihat jelas
                     </p>
                     <label
                       htmlFor="foto-upload"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-all duration-200"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Pilih Foto
@@ -451,70 +368,100 @@ const BiodataPage = () => {
 
               {/* Existing Form Fields */}
               <div className="space-y-6">
-                <Input
-                  name="nama_penggilan"
-                  value={formData.nama_penggilan}
-                  onChange={handleChange}
-                  placeholder="Masukkan nama panggilan"
-                  label="Nama Panggilan"
-                  required
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    name="tempat_lahir"
-                    value={formData.tempat_lahir}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nama Panggilan
+                  </label>
+                  <input
+                    name="nama_penggilan"
+                    value={formData.nama_penggilan}
                     onChange={handleChange}
-                    placeholder="Masukkan tempat lahir"
-                    label="Tempat Lahir"
+                    placeholder="Masukkan nama panggilan"
                     required
-                  />
-                  <Input
-                    name="tanggal_lahir"
-                    value={formData.tanggal_lahir}
-                    onChange={handleChange}
-                    type="date"
-                    label="Tanggal Lahir"
-                    required
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    name="anak_ke"
-                    value={formData.anak_ke}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tempat Lahir
+                    </label>
+                    <input
+                      name="tempat_lahir"
+                      value={formData.tempat_lahir}
+                      onChange={handleChange}
+                      placeholder="Masukkan tempat lahir"
+                      required
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tanggal Lahir
+                    </label>
+                    <input
+                      name="tanggal_lahir"
+                      value={formData.tanggal_lahir}
+                      onChange={handleChange}
+                      type="date"
+                      required
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Anak Ke-
+                    </label>
+                    <input
+                      name="anak_ke"
+                      value={formData.anak_ke}
+                      onChange={handleChange}
+                      placeholder="Contoh: 2"
+                      type="number"
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Jumlah Saudara
+                    </label>
+                    <input
+                      name="jumlah_saudara"
+                      value={formData.jumlah_saudara}
+                      onChange={handleChange}
+                      placeholder="Contoh: 3"
+                      type="number"
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Indeks Prestasi
+                  </label>
+                  <input
+                    name="ip"
+                    value={formData.ip}
                     onChange={handleChange}
-                    placeholder="Contoh: 2"
-                    label="Anak Ke-"
+                    placeholder="Contoh: 3.85"
                     type="number"
-                  />
-                  <Input
-                    name="jumlah_saudara"
-                    value={formData.jumlah_saudara}
-                    onChange={handleChange}
-                    placeholder="Contoh: 3"
-                    label="Jumlah Saudara"
-                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="4"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                   />
                 </div>
-                <Input
-                  name="ip"
-                  value={formData.ip}
-                  onChange={handleChange}
-                  placeholder="Contoh: 3.85"
-                  label="Indeks Prestasi"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="4"
-                />
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Agama
                   </label>
                   <select
                     name="agama"
                     value={formData.agama}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                     required
                   >
                     <option value="">Pilih Agama</option>
@@ -526,64 +473,89 @@ const BiodataPage = () => {
                     <option value="Konghucu">Konghucu</option>
                   </select>
                 </div>
-                <Input
-                  name="no_hp"
-                  value={formData.no_hp}
-                  onChange={handleChange}
-                  placeholder="Masukkan nomor HP"
-                  label="Nomor Handphone"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nomor Handphone
+                  </label>
+                  <input
+                    name="no_hp"
+                    value={formData.no_hp}
+                    onChange={handleChange}
+                    placeholder="Masukkan nomor HP"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
               </div>
             </div>
 
-              {/* Data Alamat dan Informasi */}
-              <div className="bg-white rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-teal-400">
-              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-teal-50 rounded-lg">
-                  <Home className="w-6 h-6 text-teal-500" />
+            {/* Data Alamat dan Informasi */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 dark:border-gray-700 hover:border-teal-400 dark:hover:border-teal-500">
+              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-teal-50 dark:bg-teal-900/30 rounded-lg">
+                  <Home className="w-6 h-6 text-teal-500 dark:text-teal-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                   Alamat & Informasi
                 </h2>
               </div>
               <div className="space-y-6">
-                <Input
-                  name="alamat"
-                  value={formData.alamat}
-                  onChange={handleChange}
-                  placeholder="Masukkan alamat lengkap"
-                  label="Alamat"
-                />
-                <Input
-                  name="alamat_domisili"
-                  value={formData.alamat_domisili}
-                  onChange={handleChange}
-                  placeholder="Masukkan alamat domisili"
-                  label="Alamat Domisili"
-                />
-                <Input
-                  name="alasan"
-                  value={formData.alasan}
-                  onChange={handleChange}
-                  placeholder="Masukkan alasan magang"
-                  label="Alasan Magang"
-                />
-                <Input
-                  name="keahlian"
-                  value={formData.keahlian}
-                  onChange={handleChange}
-                  placeholder="Masukkan keahlian"
-                  label="Keahlian"
-                />
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Alamat
+                  </label>
+                  <input
+                    name="alamat"
+                    value={formData.alamat}
+                    onChange={handleChange}
+                    placeholder="Masukkan alamat lengkap"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Alamat Domisili
+                  </label>
+                  <input
+                    name="alamat_domisili"
+                    value={formData.alamat_domisili}
+                    onChange={handleChange}
+                    placeholder="Masukkan alamat domisili"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Alasan Magang
+                  </label>
+                  <input
+                    name="alasan"
+                    value={formData.alasan}
+                    onChange={handleChange}
+                    placeholder="Masukkan alasan magang"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Keahlian
+                  </label>
+                  <input
+                    name="keahlian"
+                    value={formData.keahlian}
+                    onChange={handleChange}
+                    placeholder="Masukkan keahlian"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Unit Kerja
                   </label>
                   <select
                     name="unit_kerja"
                     value={formData.unit_kerja}
                     onChange={handleChange}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
                     required
                   >
                     <option value="">Pilih Unit Kerja</option>
@@ -594,75 +566,105 @@ const BiodataPage = () => {
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    name="jadwal_mulai"
-                    value={formData.jadwal_mulai}
-                    onChange={handleChange}
-                    type="date"
-                    label="Jadwal Mulai"
-                    required
-                  />
-                  <Input
-                    name="jadwal_selesai"
-                    value={formData.jadwal_selesai}
-                    onChange={handleChange}
-                    type="date"
-                    label="Jadwal Selesai"
-                    required
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Jadwal Mulai
+                    </label>
+                    <input
+                      name="jadwal_mulai"
+                      value={formData.jadwal_mulai}
+                      onChange={handleChange}
+                      type="date"
+                      required
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Jadwal Selesai
+                    </label>
+                    <input
+                      name="jadwal_selesai"
+                      value={formData.jadwal_selesai}
+                      onChange={handleChange}
+                      type="date"
+                      required
+                      className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-           {/* Data Keluarga */}
-           <div className="bg-white rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-purple-400">
-              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-purple-50 rounded-lg">
-                  <Users className="w-6 h-6 text-purple-500" />
+            {/* Data Keluarga */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500">
+              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+                  <Users className="w-6 h-6 text-purple-500 dark:text-purple-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                   Data Keluarga
                 </h2>
               </div>
               <div className="space-y-6">
-                <Input
-                  name="nama_ibu"
-                  value={formData.nama_ibu}
-                  onChange={handleChange}
-                  placeholder="Masukkan nama ibu"
-                  label="Nama Ibu"
-                />
-                <Input
-                  name="pekerjaan_ibu"
-                  value={formData.pekerjaan_ibu}
-                  onChange={handleChange}
-                  placeholder="Masukkan pekerjaan ibu"
-                  label="Pekerjaan Ibu"
-                />
-                <Input
-                  name="nama_ayah"
-                  value={formData.nama_ayah}
-                  onChange={handleChange}
-                  placeholder="Masukkan nama ayah"
-                  label="Nama Ayah"
-                />
-                <Input
-                  name="pekerjaan_ayah"
-                  value={formData.pekerjaan_ayah}
-                  onChange={handleChange}
-                  placeholder="Masukkan pekerjaan ayah"
-                  label="Pekerjaan Ayah"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nama Ibu
+                  </label>
+                  <input
+                    name="nama_ibu"
+                    value={formData.nama_ibu}
+                    onChange={handleChange}
+                    placeholder="Masukkan nama ibu"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Pekerjaan Ibu
+                  </label>
+                  <input
+                    name="pekerjaan_ibu"
+                    value={formData.pekerjaan_ibu}
+                    onChange={handleChange}
+                    placeholder="Masukkan pekerjaan ibu"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Nama Ayah
+                  </label>
+                  <input
+                    name="nama_ayah"
+                    value={formData.nama_ayah}
+                    onChange={handleChange}
+                    placeholder="Masukkan nama ayah"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Pekerjaan Ayah
+                  </label>
+                  <input
+                    name="pekerjaan_ayah"
+                    value={formData.pekerjaan_ayah}
+                    onChange={handleChange}
+                    placeholder="Masukkan pekerjaan ayah"
+                    className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
               </div>
             </div>
 
-             {/* Riwayat Pendidikan */}
-             <div className="bg-white rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-yellow-400">
-              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-yellow-50 rounded-lg">
-                  <GraduationCap className="w-6 h-6 text-yellow-500" />
+            {/* Riwayat Pendidikan */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transform transition-all duration-200 hover:shadow-md border border-gray-200 dark:border-gray-700 hover:border-yellow-400 dark:hover:border-yellow-500">
+              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
+                  <GraduationCap className="w-6 h-6 text-yellow-500 dark:text-yellow-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                   Riwayat Pendidikan
                 </h2>
               </div>
@@ -670,34 +672,48 @@ const BiodataPage = () => {
                 {["SD", "SMP", "SMA/SMK"].map((level, index) => (
                   <div
                     key={level}
-                    className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-100"
-                  
+                    className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-4 border border-gray-100 dark:border-gray-600"
                   >
-                    <h3 className="text-lg font-medium text-gray-700">
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">
                       {level}
                     </h3>
-                    <Input
-                      name="nama_sekolah"
-                      value={formData.riwayat_pendidikan[index].nama_sekolah}
-                      onChange={(e) => handleRiwayatChange(e, index)}
-                      placeholder="Nama Sekolah"
-                      label="Nama Sekolah"
-                    />
-                    <Input
-                      name="tahun_tempat"
-                      value={formData.riwayat_pendidikan[index].tahun_tempat}
-                      onChange={(e) => handleRiwayatChange(e, index)}
-                      placeholder="Tahun Lulus"
-                      label="Tahun Lulus"
-                      type="number"
-                    />
-                    <Input
-                      name="tempat"
-                      value={formData.riwayat_pendidikan[index].tempat}
-                      onChange={(e) => handleRiwayatChange(e, index)}
-                      placeholder="Tempat Sekolah"
-                      label="Tempat Sekolah"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Nama Sekolah
+                      </label>
+                      <input
+                        name="nama_sekolah"
+                        value={formData.riwayat_pendidikan[index].nama_sekolah}
+                        onChange={(e) => handleRiwayatChange(e, index)}
+                        placeholder="Nama Sekolah"
+                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Tahun Lulus
+                      </label>
+                      <input
+                        name="tahun_tempat"
+                        value={formData.riwayat_pendidikan[index].tahun_tempat}
+                        onChange={(e) => handleRiwayatChange(e, index)}
+                        placeholder="Tahun Lulus"
+                        type="number"
+                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Tempat Sekolah
+                      </label>
+                      <input
+                        name="tempat"
+                        value={formData.riwayat_pendidikan[index].tempat}
+                        onChange={(e) => handleRiwayatChange(e, index)}
+                        placeholder="Tempat Sekolah"
+                        className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -711,9 +727,9 @@ const BiodataPage = () => {
                 type="checkbox"
                 checked={isDataCorrect}
                 onChange={handleCheckboxChange}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 dark:text-blue-500 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400"
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 Saya menyatakan bahwa data yang diisi adalah benar.
               </span>
             </label>
@@ -722,7 +738,7 @@ const BiodataPage = () => {
               <button
                 onClick={handleSubmit}
                 disabled={!isDataCorrect || loading}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-700 dark:to-blue-600 hover:from-blue-700 hover:to-blue-600 dark:hover:from-blue-800 dark:hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

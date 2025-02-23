@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Sidebar from "../components/Sidebar";
@@ -15,16 +15,29 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const Modal = ({ children, isOpen, onClose }) => {
+  const { darkMode } = useContext(DarkModeContext);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`p-6 rounded-lg shadow-lg max-w-lg w-full relative ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className={`absolute top-4 right-4 ${
+            darkMode ? "text-gray-400 hover:text-gray-200" : "text-gray-500 hover:text-gray-700"
+          }`}
         >
           ✖
         </button>
@@ -35,6 +48,7 @@ const Modal = ({ children, isOpen, onClose }) => {
 };
 
 const FormTugas = () => {
+  const { darkMode } = useContext(DarkModeContext);
   const [deskripsiTugas, setDeskripsiTugas] = useState("");
   const [deadline, setDeadline] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,84 +60,70 @@ const FormTugas = () => {
   const [error, setError] = useState(null);
   const [pesertaList, setPesertaList] = useState([]);
   const [selectedPesertaId, setSelectedPesertaId] = useState("");
-  const [sortBy, setSortBy] = useState("createdAt"); // Kolom default untuk sorting
-  const [sortOrder, setSortOrder] = useState("asc"); // Arah default: ascending
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("asc");
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Pagination functions
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const goToFirstPage = () => setCurrentPage(1);
   const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPreviousPage = () =>
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const goToNextPage = () =>
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   const filteredTugasPaging = rekapanTugas
-  .filter((tugas) =>
-    tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-  .sort((a, b) => {
-    // Sorting berdasarkan kolom yang dipilih
-    let valueA, valueB;
-    switch (sortBy) {
-      case "deadline":
-        valueA = new Date(a.deadline);
-        valueB = new Date(b.deadline);
-        break;
-      case "status":
-        valueA = a.status;
-        valueB = b.status;
-        break;
-      case "peserta":
-        // Convert to string, handle null/undefined, and use lowercase
-        valueA = String(a.peserta?.nama || "").trim().toLowerCase();
-        valueB = String(b.peserta?.nama || "").trim().toLowerCase();
-        break;
-      default:
-        valueA = new Date(a.createdAt);
-        valueB = new Date(b.createdAt);
-        break;
-    }
-    // Urutkan ascending atau descending
-    if (sortOrder === "asc") {
-      // Perbandingan manual untuk berbagai tipe data
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return valueA.localeCompare(valueB);
+    .filter((tugas) =>
+      tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      let valueA, valueB;
+      switch (sortBy) {
+        case "deadline":
+          valueA = new Date(a.deadline);
+          valueB = new Date(b.deadline);
+          break;
+        case "status":
+          valueA = a.status;
+          valueB = b.status;
+          break;
+        case "peserta":
+          valueA = String(a.peserta?.nama || "").trim().toLowerCase();
+          valueB = String(b.peserta?.nama || "").trim().toLowerCase();
+          break;
+        default:
+          valueA = new Date(a.createdAt);
+          valueB = new Date(b.createdAt);
+          break;
       }
-      return valueA > valueB ? 1 : -1;
-    } else {
-      // Untuk descending
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return valueB.localeCompare(valueA);
+      if (sortOrder === "asc") {
+        if (typeof valueA === "string" && typeof valueB === "string") {
+          return valueA.localeCompare(valueB);
+        }
+        return valueA > valueB ? 1 : -1;
+      } else {
+        if (typeof valueA === "string" && typeof valueB === "string") {
+          return valueB.localeCompare(valueA);
+        }
+        return valueA < valueB ? 1 : -1;
       }
-      return valueA < valueB ? 1 : -1;
-    }
-  });
+    });
 
-  // Update total pages when filtered data changes
   useEffect(() => {
     setTotalPages(Math.ceil(filteredTugasPaging.length / itemsPerPage));
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   }, [filteredTugasPaging.length, itemsPerPage]);
 
-  // Get current items for the current page
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredTugasPaging.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
+  const currentItems = filteredTugasPaging.slice(indexOfFirstItem, indexOfLastItem);
 
   const fetchPesertaList = async () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-biodata",
+        "http://localhost:3000/admin/list-peserta",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -138,23 +138,6 @@ const FormTugas = () => {
       console.error("Error fetching peserta:", error);
     }
   };
-
-  // Kemudian di bagian dropdown peserta:
-  <select
-    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
-    value={selectedPesertaId}
-    onChange={(e) => setSelectedPesertaId(e.target.value)}
-    required
-  >
-    <option value="">Pilih Peserta</option>
-    {pesertaList
-      .filter((peserta) => peserta.status_peserta === "Aktif")
-      .map((peserta) => (
-        <option key={peserta.id} value={peserta.id}>
-          {peserta.nama} - {peserta.nim} - {peserta.jurusan}
-        </option>
-      ))}
-  </select>;
 
   const fetchTugas = async () => {
     try {
@@ -185,7 +168,6 @@ const FormTugas = () => {
   }, []);
 
   const handleOpenAddModal = () => {
-    // Reset semua state ke nilai awal
     setDeskripsiTugas("");
     setDeadline("");
     setSelectedPesertaId("");
@@ -195,7 +177,6 @@ const FormTugas = () => {
   };
 
   const handleCloseModal = () => {
-    // Reset semua state ke nilai awal
     setShowPopup(false);
     setDeskripsiTugas("");
     setDeadline("");
@@ -231,6 +212,8 @@ const FormTugas = () => {
           text: "Tugas berhasil diperbarui",
           showConfirmButton: false,
           timer: 1500,
+          background: darkMode ? "#1f2937" : "#fff",
+          confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
         });
       } else {
         if (!selectedPesertaId) {
@@ -238,6 +221,8 @@ const FormTugas = () => {
             icon: "error",
             title: "Oops...",
             text: "Silahkan pilih peserta terlebih dahulu",
+            background: darkMode ? "#1f2937" : "#fff",
+            confirmButtonColor: darkMode ? "#dc2626" : "#d33",
           });
           return;
         }
@@ -258,17 +243,13 @@ const FormTugas = () => {
           text: "Tugas berhasil ditambahkan",
           showConfirmButton: false,
           timer: 1500,
+          background: darkMode ? "#1f2937" : "#fff",
+          confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
         });
       }
 
       fetchTugas();
-
-      setShowPopup(false);
-      setDeskripsiTugas("");
-      setDeadline("");
-      setSelectedPesertaId("");
-      setIsEdit(false);
-      setEditTugasId(null);
+      handleCloseModal();
     } catch (error) {
       console.error("Error submitting tugas:", error);
       Swal.fire({
@@ -277,14 +258,15 @@ const FormTugas = () => {
         text:
           error.response?.data?.message ||
           "Terjadi kesalahan saat menambah tugas",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
 
   const handleEdit = (tugas) => {
-    // Format deadline ke format datetime-local yang sesuai
     const deadlineDate = new Date(tugas.deadline);
-    const formattedDeadline = deadlineDate.toISOString().slice(0, 16); // format: "YYYY-MM-DDTHH:mm"
+    const formattedDeadline = deadlineDate.toISOString().slice(0, 16);
 
     setDeskripsiTugas(tugas.deskripsi);
     setDeadline(formattedDeadline);
@@ -292,7 +274,6 @@ const FormTugas = () => {
     setIsEdit(true);
     setEditTugasId(tugas.id);
 
-    // Log untuk debugging
     console.log("Edit Tugas:", {
       id: tugas.id,
       deskripsi: tugas.deskripsi,
@@ -300,17 +281,17 @@ const FormTugas = () => {
     });
   };
 
-  // Update handleDeleteAdmin juga dengan Sweet Alert
   const handleDeleteAdmin = async (id) => {
     Swal.fire({
       title: "Apakah anda yakin?",
       text: "Tugas yang dihapus tidak dapat dikembalikan!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      confirmButtonColor: darkMode ? "#dc2626" : "#3085d6",
+      cancelButtonColor: darkMode ? "#2563eb" : "#d33",
       confirmButtonText: "Ya, hapus!",
       cancelButtonText: "Batal",
+      background: darkMode ? "#1f2937" : "#fff",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -327,6 +308,8 @@ const FormTugas = () => {
             text: "Tugas berhasil dihapus",
             showConfirmButton: false,
             timer: 1500,
+            background: darkMode ? "#1f2937" : "#fff",
+            confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
           });
 
           fetchTugas();
@@ -336,28 +319,68 @@ const FormTugas = () => {
             icon: "error",
             title: "Oops...",
             text: "Terjadi kesalahan saat menghapus tugas",
+            background: darkMode ? "#1f2937" : "#fff",
+            confirmButtonColor: darkMode ? "#dc2626" : "#d33",
           });
         }
       }
     });
   };
 
-  
-
-  if (isLoading) return <div className="text-center p-4">Loading...</div>;
-  if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
+  if (isLoading)
+    return (
+      <div
+        className={`flex justify-center items-center h-screen ${
+          darkMode ? "bg-gray-900" : "bg-gray-50"
+        }`}
+      >
+        <div
+          className={`animate-spin rounded-full h-12 w-12 border-b-2 ${
+            darkMode ? "border-blue-400" : "border-blue-600"
+          }`}
+        ></div>
+      </div>
+    );
+  if (error)
+    return (
+      <div
+        className={`flex justify-center items-center h-screen ${
+          darkMode ? "text-red-400" : "text-red-600"
+        }`}
+      >
+        {error}
+      </div>
+    );
 
   return (
-    <div className="flex max-w-[95rem] mx-auto">
+    <div
+      className={`flex min-h-screen ${
+        darkMode
+          ? "bg-gradient-to-br from-gray-900 to-indigo-900"
+          : "bg-gradient-to-br from-gray-50 to-indigo-50"
+      } transition-colors duration-300`}
+    >
       <Sidebar />
-      <div className="flex-1 ml-[250px] mx-auto h-screen">
+      <div className="flex-1 md:ml-[250px]">
         <Navbar />
-        <main className="p-[100px]">
-          <div className="shadow-lg p-6 bg-white rounded-md mt-10">
-            <h2 className="text-blue-600/90 text-3xl font-bold">
+        <main className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
+          <div
+            className={`shadow-lg p-6 ${
+              darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+            } rounded-2xl bg-opacity-95 dark:bg-opacity-95 backdrop-blur-sm border transition-colors duration-300`}
+          >
+            <h2
+              className={`text-3xl font-bold ${
+                darkMode ? "text-blue-400" : "text-blue-600"
+              }`}
+            >
               Rekapan Tugas
             </h2>
-            <p className="text-sm text-gray-500">
+            <p
+              className={`text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
               Total: {rekapanTugas.length} Tugas
             </p>
 
@@ -368,12 +391,19 @@ const FormTugas = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 px={20}
-                className="w-full text-center max-w-lg border border-blue-600/90 rounded-lg"
+                className={`w-full text-center max-w-lg rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-gray-50 border-blue-600/90 text-gray-800"
+                }`}
               />
 
-              {/* Dropdown untuk memilih kolom sorting */}
               <select
-                className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+                className={`px-3 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-800"
+                }`}
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -383,39 +413,49 @@ const FormTugas = () => {
                 <option value="peserta">Sort by Nama Peserta</option>
               </select>
 
-              {/* Tombol untuk memilih arah sorting */}
               <button
-                className="px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
-                onClick={() =>
-                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                }
+                className={`px-3 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600"
+                    : "bg-white border-gray-300 text-gray-800 hover:bg-gray-100"
+                }`}
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
               >
                 {sortOrder === "asc" ? "↑ Asc" : "↓ Desc"}
               </button>
 
               <Button
-                label={"Tugas"}
+                label="Tugas"
                 variant="blue"
                 ikon={<Plus />}
                 onClick={handleOpenAddModal}
+                className={`${
+                  darkMode ? "bg-blue-500 hover:bg-blue-600" : "bg-blue-600 hover:bg-blue-700"
+                }`}
               />
             </div>
 
             <div className="flex flex-col min-h-[600px]">
               <div className="flex-grow overflow-auto">
-                <table className="w-full border-collapse text-center">
+                <table
+                  className={`w-full border-collapse text-center ${
+                    darkMode ? "text-gray-200" : "text-gray-800"
+                  }`}
+                >
                   <thead>
-                    <tr className="bg-blue-600/90 text-white border-lg">
-                      <th className="p-2 border border-gray-300">No</th>
-                      <th className="p-2 border border-gray-300">Peserta</th>
-                      <th className="p-2 border border-gray-300">Deadline</th>
-                      <th className="p-2 border border-gray-300">Status</th>
-                      <th className="p-2 border border-gray-300">
-                        Pemberi Tugas
-                      </th>
-                      <th className="p-2 border border-gray-300">Deskripsi</th>
-                      <th className="p-2 border border-gray-300">Catatan</th>
-                      <th className="p-2 border border-gray-300">Aksi</th>
+                    <tr
+                      className={`${
+                        darkMode ? "bg-blue-600/90" : "bg-blue-600/90"
+                      } text-white`}
+                    >
+                      <th className="p-2">No</th>
+                      <th className="p-2">Peserta</th>
+                      <th className="p-2">Deadline</th>
+                      <th className="p-2">Status</th>
+                      <th className="p-2">Pemberi Tugas</th>
+                      <th className="p-2">Deskripsi</th>
+                      <th className="p-2">Catatan</th>
+                      <th className="p-2">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -423,52 +463,65 @@ const FormTugas = () => {
                       <tr
                         key={tugas.id}
                         className={`${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-blue-50`}
+                          index % 2 === 0
+                            ? darkMode
+                              ? "bg-gray-800"
+                              : "bg-gray-50"
+                            : darkMode
+                            ? "bg-gray-900"
+                            : "bg-white"
+                        } ${darkMode ? "hover:bg-gray-700" : "hover:bg-blue-50"}`}
                       >
-                        <td className="border border-gray-300 p-4 text-sm">
-                          {indexOfFirstItem + index + 1}
-                        </td>
-                        <td className="border border-gray-300 p-2 text-sm">
-                          {tugas.peserta?.nama || "-"}
-                        </td>
-                        <td className="border border-gray-300 p-2 text-sm">
+                        <td className="p-4 text-sm">{indexOfFirstItem + index + 1}</td>
+                        <td className="p-2 text-sm">{tugas.peserta?.nama || "-"}</td>
+                        <td className="p-2 text-sm">
                           {new Date(tugas.deadline).toLocaleDateString("id-ID")}
                         </td>
-                        <td className="border border-gray-300 p-2 text-sm">
+                        <td className="p-2 text-sm">
                           <span
                             className={`px-2 py-1 rounded-full ${
                               tugas.status === "Selesai"
-                                ? "bg-teal-100 text-green-800"
+                                ? darkMode
+                                  ? "bg-teal-900 text-teal-300"
+                                  : "bg-teal-100 text-green-800"
                                 : tugas.status === "Terlambat"
-                                ? "bg-red-100 text-red-800"
+                                ? darkMode
+                                  ? "bg-red-900 text-red-300"
+                                  : "bg-red-100 text-red-800"
+                                : darkMode
+                                ? "bg-yellow-900 text-yellow-300"
                                 : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
                             {tugas.status}
                           </span>
                         </td>
-
-                        <td className="border border-gray-300 p-2 text-sm">
-                          {tugas.pegawai?.nama || "-"}
-                        </td>
-                        <td className="border border-gray-300 p-2 text-sm">
-                          {tugas.deskripsi}{" "}
-                        </td>
-                        <td className="border border-gray-300 p-2 text-sm">
-                          {tugas.catatan}
-                        </td>
-                        <td className="border border-gray-300 p-2">
+                        <td className="p-2 text-sm">{tugas.pegawai?.nama || "-"}</td>
+                        <td className="p-2 text-sm">{tugas.deskripsi}</td>
+                        <td className="p-2 text-sm">{tugas.catatan}</td>
+                        <td className="p-2">
                           <div className="flex items-center justify-center space-x-4">
-                            <div className="p-2 rounded-lg bg-yellow-50 shadow-lg">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                darkMode ? "bg-yellow-900/50" : "bg-yellow-50"
+                              } shadow-lg`}
+                            >
                               <Pencil
-                                className="text-yellow-600 cursor-pointer"
+                                className={`${
+                                  darkMode ? "text-yellow-300" : "text-yellow-600"
+                                } cursor-pointer`}
                                 onClick={() => handleEdit(tugas)}
                               />
                             </div>
-                            <div className="p-2 rounded-lg bg-red-100 shadow-lg">
+                            <div
+                              className={`p-2 rounded-lg ${
+                                darkMode ? "bg-red-900/50" : "bg-red-100"
+                              } shadow-lg`}
+                            >
                               <Trash2
-                                className="text-red-600 cursor-pointer"
+                                className={`${
+                                  darkMode ? "text-red-300" : "text-red-600"
+                                } cursor-pointer`}
                                 onClick={() => handleDeleteAdmin(tugas.id)}
                               />
                             </div>
@@ -479,13 +532,22 @@ const FormTugas = () => {
                   </tbody>
                 </table>
               </div>
+
               {/* Pagination Controls */}
-              <div className="mt-auto pt-4 border-t">
+              <div
+                className={`mt-auto pt-4 ${
+                  darkMode ? "border-gray-700" : "border-gray-200"
+                } border-t`}
+              >
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={goToFirstPage}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`p-2 rounded-lg ${
+                      darkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                     aria-label="First page"
                   >
                     <ChevronsLeft className="h-5 w-5" />
@@ -493,7 +555,11 @@ const FormTugas = () => {
                   <button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`p-2 rounded-lg ${
+                      darkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                     aria-label="Previous page"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -505,8 +571,7 @@ const FormTugas = () => {
                       if (
                         pageNumber === 1 ||
                         pageNumber === totalPages ||
-                        (pageNumber >= currentPage - 1 &&
-                          pageNumber <= currentPage + 1)
+                        (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
                       ) {
                         return (
                           <button
@@ -514,8 +579,12 @@ const FormTugas = () => {
                             onClick={() => paginate(pageNumber)}
                             className={`px-4 py-2 rounded-lg border ${
                               currentPage === pageNumber
-                                ? "bg-blue-600/90 text-white"
-                                : "hover:bg-gray-100"
+                                ? darkMode
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-blue-600/90 text-white"
+                                : darkMode
+                                ? "bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600"
+                                : "hover:bg-gray-100 text-gray-600 border-gray-300"
                             }`}
                           >
                             {pageNumber}
@@ -526,7 +595,12 @@ const FormTugas = () => {
                         pageNumber === currentPage + 2
                       ) {
                         return (
-                          <span key={pageNumber} className="px-2 py-1">
+                          <span
+                            key={pageNumber}
+                            className={`px-2 py-1 ${
+                              darkMode ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
                             ...
                           </span>
                         );
@@ -538,7 +612,11 @@ const FormTugas = () => {
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`p-2 rounded-lg ${
+                      darkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                     aria-label="Next page"
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -546,13 +624,21 @@ const FormTugas = () => {
                   <button
                     onClick={goToLastPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`p-2 rounded-lg ${
+                      darkMode
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                     aria-label="Last page"
                   >
                     <ChevronsRight className="h-5 w-5" />
                   </button>
 
-                  <span className="text-sm text-gray-600 ml-4">
+                  <span
+                    className={`text-sm ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    } ml-4`}
+                  >
                     Halaman {currentPage} dari {totalPages}
                   </span>
                 </div>
@@ -560,19 +646,31 @@ const FormTugas = () => {
             </div>
           </div>
 
-          <Modal isOpen={showPopup} onClose={() => setShowPopup(false)}>
+          <Modal isOpen={showPopup} onClose={handleCloseModal}>
             <form onSubmit={handleSubmit}>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              <h2
+                className={`text-2xl font-bold mb-6 ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
                 {isEdit ? "Edit Tugas Magang" : "Form Tugas Magang"}
               </h2>
 
               {!isEdit && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    className={`block text-sm font-medium mb-2 ${
+                      darkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
                     Peserta
                   </label>
                   <select
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+                    className={`w-full px-3 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${
+                      darkMode
+                        ? "bg-gray-700 border-gray-600 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-800"
+                    }`}
                     value={selectedPesertaId}
                     onChange={(e) => setSelectedPesertaId(e.target.value)}
                     required
@@ -588,11 +686,19 @@ const FormTugas = () => {
               )}
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   Deskripsi Tugas
                 </label>
                 <textarea
-                  className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+                  className={`w-full px-3 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-800"
+                  }`}
                   placeholder="Masukkan deskripsi tugas"
                   value={deskripsiTugas}
                   onChange={(e) => setDeskripsiTugas(e.target.value)}
@@ -602,7 +708,11 @@ const FormTugas = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  className={`block text-sm font-medium mb-2 ${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   Deadline Tugas
                 </label>
                 <Input
@@ -610,6 +720,9 @@ const FormTugas = () => {
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                   required
+                  className={`w-full ${
+                    darkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-800"
+                  }`}
                 />
               </div>
 
@@ -618,6 +731,9 @@ const FormTugas = () => {
                   label={isEdit ? "Update Tugas" : "Tambah Tugas"}
                   variant="green"
                   type="submit"
+                  className={`${
+                    darkMode ? "bg-green-500 hover:bg-green-600" : "bg-green-600 hover:bg-green-700"
+                  }`}
                 />
               </div>
             </form>
