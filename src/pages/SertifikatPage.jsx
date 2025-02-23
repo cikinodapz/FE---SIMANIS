@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -8,7 +8,7 @@ import Input from "../components/Input";
 import { format } from "date-fns";
 import bps from "/assets/bps.png";
 import Swal from "sweetalert2";
-import DOMPurify from "dompurify";
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const CardImage = ({
   image,
@@ -19,24 +19,34 @@ const CardImage = ({
   isActive,
   onPreview,
 }) => {
+  const { darkMode } = useContext(DarkModeContext);
+
   return (
     <div
       className={`group relative rounded-xl transition-all duration-300 ${
         isActive
           ? "bg-gradient-to-r from-blue-500 to-blue-600 p-1 shadow-lg hover:shadow-xl"
-          : "bg-white border border-gray-200 shadow-sm hover:shadow-lg"
+          : `${
+              darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+            } border shadow-sm hover:shadow-lg`
       }`}
     >
       <div
-        className={`bg-white rounded-lg overflow-hidden ${
-          isActive ? "p-0.5" : ""
-        }`}
+        className={`${
+          darkMode ? "bg-gray-800" : "bg-white"
+        } rounded-lg overflow-hidden ${isActive ? "p-0.5" : ""}`}
       >
         <div className="w-full h-48 overflow-hidden rounded-t-lg">
           {image}
           {isActive && (
             <div className="absolute top-0 right-0 m-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500 text-blue-800">
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  darkMode
+                    ? "bg-blue-600 text-blue-100"
+                    : "bg-blue-500 text-blue-800"
+                }`}
+              >
                 <Check className="w-4 h-4 mr-1" />
                 Active
               </span>
@@ -51,7 +61,11 @@ const CardImage = ({
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={onEdit}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200"
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${
+                  darkMode
+                    ? "text-yellow-300 bg-yellow-900/50 hover:bg-yellow-800/50"
+                    : "text-yellow-700 bg-yellow-50 hover:bg-yellow-100"
+                } rounded-lg transition-colors duration-200`}
               >
                 <Edit2 className="w-4 h-4" />
                 <span>Edit</span>
@@ -59,7 +73,11 @@ const CardImage = ({
 
               <button
                 onClick={onDelete}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors duration-200"
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${
+                  darkMode
+                    ? "text-red-300 bg-red-900/50 hover:bg-red-800/50"
+                    : "text-red-700 bg-red-50 hover:bg-red-100"
+                } rounded-lg transition-colors duration-200`}
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Delete</span>
@@ -70,22 +88,34 @@ const CardImage = ({
               onClick={onApply}
               className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                  : "text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-100"
+                  ? `${
+                      darkMode
+                        ? "text-gray-300 bg-gray-700 hover:bg-gray-600"
+                        : "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                    }`
+                  : `${
+                      darkMode
+                        ? "text-white bg-blue-600 hover:bg-blue-700"
+                        : "text-white bg-blue-600 hover:bg-blue-700"
+                    }`
               }`}
             >
               <Check className="w-4 h-4" />
               <span>{isActive ? "Currently Active" : "Apply Template"}</span>
             </button>
-          </div>
 
-          <button
-            onClick={onPreview} // Add onClick handler
-            className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-          >
-            <Eye className="w-4 h-4" />
-            <span>Preview</span>
-          </button>
+            <button
+              onClick={onPreview}
+              className={`w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium ${
+                darkMode
+                  ? "text-gray-300 bg-gray-700 hover:bg-gray-600"
+                  : "text-gray-700 bg-gray-50 hover:bg-gray-100"
+              } rounded-lg transition-colors duration-200`}
+            >
+              <Eye className="w-4 h-4" />
+              <span>Preview</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -93,6 +123,7 @@ const CardImage = ({
 };
 
 const TemplateManagement = () => {
+  const { darkMode } = useContext(DarkModeContext);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,10 +132,11 @@ const TemplateManagement = () => {
     nama: "",
     file: null,
   });
-  // Add these states at the beginning of the TemplateManagement component
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStage, setUploadStage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [previewContent, setPreviewContent] = useState(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   useEffect(() => {
     fetchTemplates();
@@ -131,6 +163,8 @@ const TemplateManagement = () => {
         text: "Template berhasil diterapkan.",
         timer: 1500,
         showConfirmButton: false,
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
       });
     } catch (err) {
       console.error("Error applying template:", err);
@@ -138,17 +172,12 @@ const TemplateManagement = () => {
         icon: "error",
         title: "Gagal!",
         text: err.response?.data?.message || "Gagal menerapkan template",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
 
-  // In the TemplateManagement component, add state for preview
-  const [previewContent, setPreviewContent] = useState(null);
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-
-  // Add a function to handle preview
-  // Function to handle preview template
-  // Modify the handlePreviewTemplate function
   const handlePreviewTemplate = async (templateId) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -158,19 +187,14 @@ const TemplateManagement = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: "arraybuffer", // Important for PDF binary data
+          responseType: "arraybuffer",
         }
       );
 
-      // Create blob from response data
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
-      // Set preview content with PDF URL
-      setPreviewContent({
-        url,
-        templateId: templateId,
-      });
+      setPreviewContent({ url, templateId });
       setIsPreviewModalOpen(true);
     } catch (err) {
       console.error("Error previewing template:", err);
@@ -178,14 +202,14 @@ const TemplateManagement = () => {
         icon: "error",
         title: "Gagal!",
         text: "Gagal melihat preview template",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
 
   const handleEdit = async (template) => {
-    console.log("Starting edit process for template:", template);
     try {
-      // Add custom CSS for the popup
       const customStyles = `
         <style>
           .edit-template-popup .swal2-input,
@@ -194,48 +218,42 @@ const TemplateManagement = () => {
             margin: 0.75em auto;
             font-size: 1.1em;
             padding: 0.75em;
+            ${darkMode ? "background: #374151; color: #e5e7eb;" : ""}
           }
-          
           .edit-template-popup .template-form-group {
             margin: 1.5em 0;
             text-align: left;
             padding: 0 1em;
           }
-          
           .edit-template-popup .template-form-label {
             display: block;
             margin-bottom: 0.5em;
             font-weight: 600;
-            color: #374151;
+            color: ${darkMode ? "#d1d5db" : "#374151"};
             font-size: 0.95em;
           }
-          
           .edit-template-popup .template-file-container {
-            border: 2px dashed #d1d5db;
+            border: 2px dashed ${darkMode ? "#4b5563" : "#d1d5db"};
             border-radius: 0.5em;
             padding: 1.5em;
             margin-top: 0.5em;
-            background: #f9fafb;
+            background: ${darkMode ? "#374151" : "#f9fafb"};
             transition: all 0.3s ease;
           }
-          
           .edit-template-popup .template-file-container:hover {
-            border-color: #3085d6;
-            background: #f3f4f6;
+            border-color: ${darkMode ? "#60a5fa" : "#3085d6"};
+            background: ${darkMode ? "#4b5563" : "#f3f4f6"};
           }
-          
           .edit-template-popup .template-file-description {
             margin-top: 0.75em;
             font-size: 0.85em;
-            color: #6b7280;
+            color: ${darkMode ? "#9ca3af" : "#6b7280"};
           }
-          
           .edit-template-popup .current-file-name {
             margin-top: 0.5em;
             font-size: 0.9em;
-            color: #059669;
+            color: ${darkMode ? "#34d399" : "#059669"};
           }
-          
           .swal2-confirm, .swal2-cancel {
             padding: 0.75em 2em !important;
             font-size: 1em !important;
@@ -256,7 +274,6 @@ const TemplateManagement = () => {
               value="${template.nama}"
             >
           </div>
-          
           <div class="template-form-group">
             <label class="template-form-label">File Template</label>
             <div class="template-file-container">
@@ -280,28 +297,20 @@ const TemplateManagement = () => {
         showCancelButton: true,
         confirmButtonText: "Simpan Perubahan",
         cancelButtonText: "Batal",
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#dc2626",
-        customClass: {
-          popup: "edit-template-popup",
-          confirmButton: "swal2-confirm",
-          cancelButton: "swal2-cancel",
-        },
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
+        cancelButtonColor: darkMode ? "#dc2626" : "#dc2626",
+        customClass: { popup: "edit-template-popup" },
+        background: darkMode ? "#1f2937" : "#fff",
         width: "550px",
         focusConfirm: false,
         preConfirm: () => {
           const nama = document.getElementById("swal-input-nama").value;
           const file = document.getElementById("swal-input-file").files[0];
-
           if (!nama?.trim()) {
             Swal.showValidationMessage("Nama template harus diisi");
             return false;
           }
-
-          return {
-            nama: nama.trim(),
-            file,
-          };
+          return { nama: nama.trim(), file };
         },
       });
 
@@ -309,9 +318,7 @@ const TemplateManagement = () => {
         const token = localStorage.getItem("accessToken");
         const formDataToSend = new FormData();
         formDataToSend.append("nama", formValues.nama);
-        if (formValues.file) {
-          formDataToSend.append("file", formValues.file);
-        }
+        if (formValues.file) formDataToSend.append("file", formValues.file);
 
         await axios.patch(
           `http://localhost:3000/admin/edit-template/${template.id}`,
@@ -332,6 +339,8 @@ const TemplateManagement = () => {
           text: "Template berhasil diperbarui",
           timer: 1500,
           showConfirmButton: false,
+          background: darkMode ? "#1f2937" : "#fff",
+          confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
         });
       }
     } catch (err) {
@@ -340,6 +349,8 @@ const TemplateManagement = () => {
         icon: "error",
         title: "Gagal!",
         text: err.response?.data?.message || "Gagal memperbarui template",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
@@ -350,9 +361,7 @@ const TemplateManagement = () => {
       const response = await axios.get(
         "http://localhost:3000/admin/list-template",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -374,11 +383,12 @@ const TemplateManagement = () => {
         text: `Apakah Anda yakin ingin menghapus template "${template.nama}"?`,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
+        cancelButtonColor: darkMode ? "#2563eb" : "#3085d6",
         confirmButtonText: "Ya, Hapus!",
         cancelButtonText: "Batal",
         reverseButtons: true,
+        background: darkMode ? "#1f2937" : "#fff",
       });
 
       if (result.isConfirmed) {
@@ -386,9 +396,7 @@ const TemplateManagement = () => {
         await axios.delete(
           `http://localhost:3000/admin/delete-template/${template.id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -400,6 +408,8 @@ const TemplateManagement = () => {
           text: "Template berhasil dihapus.",
           timer: 1500,
           showConfirmButton: false,
+          background: darkMode ? "#1f2937" : "#fff",
+          confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
         });
       }
     } catch (err) {
@@ -408,6 +418,8 @@ const TemplateManagement = () => {
         icon: "error",
         title: "Error!",
         text: err.response?.data?.message || "Gagal menghapus template",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
@@ -432,13 +444,11 @@ const TemplateManagement = () => {
     try {
       const token = localStorage.getItem("accessToken");
 
-      // Simulate upload stages with progress
       const updateProgress = (progress, stage) => {
         setUploadProgress(progress);
         setUploadStage(stage);
       };
 
-      // Upload the file
       updateProgress(20, "Mengupload file...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -452,22 +462,18 @@ const TemplateManagement = () => {
           },
           onUploadProgress: (progressEvent) => {
             const progress =
-              Math.round((progressEvent.loaded * 30) / progressEvent.total) +
-              20;
+              Math.round((progressEvent.loaded * 30) / progressEvent.total) + 20;
             updateProgress(progress, "Mengupload file...");
           },
         }
       );
 
-      // Simulate conversion process
       updateProgress(60, "Mengkonversi file ke PDF...");
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Simulate preview generation
       updateProgress(80, "Membuat preview...");
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Complete
       updateProgress(100, "Selesai!");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -482,6 +488,8 @@ const TemplateManagement = () => {
         text: "Template berhasil ditambahkan.",
         timer: 1500,
         showConfirmButton: false,
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
       });
     } catch (err) {
       console.error("Error adding template:", err);
@@ -490,50 +498,79 @@ const TemplateManagement = () => {
         icon: "error",
         title: "Error!",
         text: err.response?.data?.message || "Gagal menambahkan template",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     }
   };
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div
+        className={`flex justify-center items-center h-screen ${
+          darkMode ? "bg-gray-900" : "bg-gray-100"
+        }`}
+      >
+        <div
+          className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${
+            darkMode ? "border-blue-400" : "border-blue-500"
+          }`}
+        ></div>
       </div>
     );
 
   if (error)
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500">Error: {error}</div>
+      <div
+        className={`flex justify-center items-center h-screen ${
+          darkMode ? "bg-gray-900 text-red-400" : "bg-gray-100 text-red-500"
+        }`}
+      >
+        <div>Error: {error}</div>
       </div>
     );
 
   return (
-    <div className="flex max-w-[95rem] mx-auto">
+    <div
+      className={`flex min-h-screen ${
+        darkMode
+          ? "bg-gradient-to-br from-gray-900 to-indigo-900"
+          : "bg-gradient-to-br from-gray-50 to-indigo-50"
+      } transition-colors duration-300`}
+    >
       <Sidebar />
-      <div className="flex-1 ml-[250px] h-screen w-screen">
+      <div className="flex-1 md:ml-[250px]">
         <Navbar />
-        <div className="p-[100px] h-screen">
-          <div className="shadow-lg p-6 bg-white rounded-md mt-10">
+        <div className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
+          <div
+            className={`shadow-lg p-6 ${
+              darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+            } rounded-2xl bg-opacity-95 dark:bg-opacity-95 backdrop-blur-sm border transition-colors duration-300`}
+          >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h1 className="text-blue-600/90 text-3xl font-bold">
+                <h1
+                  className={`text-3xl font-bold ${
+                    darkMode ? "text-blue-400" : "text-blue-600"
+                  }`}
+                >
                   Daftar Template
                 </h1>
-                <p className="text-gray-600 mt-2">
+                <p
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  } mt-2`}
+                >
                   Total Template: {templates.length}
                 </p>
               </div>
               <button
                 onClick={() => setIsPopupVisible(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 
-    bg-gradient-to-r from-blue-600 to-blue-500 
-    hover:from-blue-700 hover:to-blue-600 
-    text-white rounded-lg font-medium 
-    shadow-lg shadow-blue-500/30 
-    hover:shadow-blue-600/40 
-    hover:scale-105 
-    transition-all duration-300"
+                className={`inline-flex items-center gap-2 px-4 py-2 ${
+                  darkMode
+                    ? "bg-blue-500 hover:bg-blue-600"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300`}
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Template</span>
@@ -554,15 +591,20 @@ const TemplateManagement = () => {
                     label={
                       <div className="p-4">
                         <div className="flex flex-col items-center">
-                          <h3 className="font-semibold text-lg mb-2 text-center">
+                          <h3
+                            className={`font-semibold text-lg mb-2 text-center ${
+                              darkMode ? "text-gray-200" : "text-gray-800"
+                            }`}
+                          >
                             {template.nama}
                           </h3>
-                          <p className="text-sm text-gray-500 mb-2">
+                          <p
+                            className={`text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            } mb-2`}
+                          >
                             Created:{" "}
-                            {format(
-                              new Date(template.createdAt),
-                              "dd MMM yyyy"
-                            )}
+                            {format(new Date(template.createdAt), "dd MMM yyyy")}
                           </p>
                         </div>
                       </div>
@@ -579,14 +621,31 @@ const TemplateManagement = () => {
           </div>
         </div>
       </div>
+
       {isPopupVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-6">
+        <div
+          className={`fixed inset-0 ${
+            darkMode ? "bg-black/70" : "bg-black/50"
+          } flex justify-center items-center z-50`}
+        >
+          <div
+            className={`p-6 rounded-lg shadow-lg w-full max-w-md ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+          >
+            <div
+              className={`flex justify-between items-center mb-6 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
               <h2 className="text-2xl font-semibold">Tambah Template</h2>
               <button
                 onClick={() => setIsPopupVisible(false)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className={`${
+                  darkMode
+                    ? "text-gray-400 hover:text-gray-200"
+                    : "text-gray-500 hover:text-gray-700"
+                } transition-colors`}
               >
                 <X className="h-6 w-6" />
               </button>
@@ -594,7 +653,11 @@ const TemplateManagement = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-gray-700 mb-2">
+                <label
+                  className={`block mb-2 ${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   Nama Template
                 </label>
                 <Input
@@ -604,12 +667,18 @@ const TemplateManagement = () => {
                     setFormData((prev) => ({ ...prev, nama: e.target.value }))
                   }
                   required
-                  className="w-full"
+                  className={`w-full ${
+                    darkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-800"
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">
+                <label
+                  className={`block mb-2 ${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
                   Upload File (.docx)
                 </label>
                 <Input
@@ -617,19 +686,31 @@ const TemplateManagement = () => {
                   accept=".docx"
                   onChange={handleFileChange}
                   required
-                  className="w-full"
+                  className={`w-full ${
+                    darkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-800"
+                  }`}
                 />
               </div>
 
               {isUploading && (
                 <div className="space-y-2">
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-2 rounded-full overflow-hidden ${
+                      darkMode ? "bg-gray-600" : "bg-gray-200"
+                    }`}
+                  >
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+                      className={`h-full ${
+                        darkMode ? "bg-blue-500" : "bg-blue-600"
+                      } rounded-full transition-all duration-300 ease-out`}
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div
+                    className={`flex justify-between text-sm ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
                     <span>{uploadStage}</span>
                     <span>{uploadProgress}%</span>
                   </div>
@@ -642,24 +723,42 @@ const TemplateManagement = () => {
                   variant="white"
                   onClick={() => setIsPopupVisible(false)}
                   disabled={isUploading}
+                  className={darkMode ? "bg-gray-700 text-gray-200 hover:bg-gray-600" : ""}
                 />
                 <Button
                   label={isUploading ? "Uploading..." : "Submit"}
                   variant="blue"
                   type="submit"
                   disabled={isUploading}
+                  className={darkMode ? "bg-blue-500 hover:bg-blue-600" : ""}
                 />
               </div>
             </form>
           </div>
         </div>
       )}
+
       {isPreviewModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-[46.3%] h-[72vh] max-w-5xl flex flex-col">
-            {/* Header - Reduced padding */}
-            <div className="flex justify-between items-center px-4 py-3 border-b">
-              <h2 className="text-xl font-semibold text-gray-800">
+        <div
+          className={`fixed inset-0 ${
+            darkMode ? "bg-black/70" : "bg-black/50"
+          } flex justify-center items-center z-50`}
+        >
+          <div
+            className={`rounded-lg shadow-xl w-[46.3%] h-[72vh] max-w-5xl flex flex-col ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+          >
+            <div
+              className={`flex justify-between items-center px-4 py-3 border-b ${
+                darkMode ? "border-gray-700" : "border-gray-200"
+              }`}
+            >
+              <h2
+                className={`text-xl font-semibold ${
+                  darkMode ? "text-gray-200" : "text-gray-800"
+                }`}
+              >
                 Preview Template
               </h2>
               <button
@@ -669,15 +768,26 @@ const TemplateManagement = () => {
                     window.URL.revokeObjectURL(previewContent.url);
                   }
                 }}
-                className="text-gray-500 hover:text-gray-700 transition-colors p-1 hover:bg-gray-100 rounded-full"
+                className={`${
+                  darkMode
+                    ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                } transition-colors p-1 rounded-full`}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Content - Minimized padding */}
-            <div className="flex-1 p-2 bg-gray-50">
-              <div className="w-[870px] h-[656px] bg-white">
+            <div
+              className={`flex-1 p-2 ${
+                darkMode ? "bg-gray-900" : "bg-gray-50"
+              }`}
+            >
+              <div
+                className={`w-[870px] h-[656px] ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}
+              >
                 <iframe
                   src={previewContent?.url}
                   className="w-full h-full"
@@ -685,7 +795,7 @@ const TemplateManagement = () => {
                   style={{
                     display: "block",
                     border: "none",
-                    backgroundColor: "#fff",
+                    backgroundColor: darkMode ? "#1f2937" : "#fff",
                   }}
                 />
               </div>

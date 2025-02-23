@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react"; // Tambah useContext
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Sidebar from "../components/Sidebar";
@@ -7,16 +7,17 @@ import DeletedAlert from "../components/DeletedAlert";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { DarkModeContext } from "../context/DarkModeContext"; // Import DarkModeContext
 
-const Modal = ({ children, isOpen, onClose }) => {
+const Modal = ({ children, isOpen, onClose, darkMode }) => { // Tambah prop darkMode
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
+      <div className={`p-6 rounded-lg shadow-lg max-w-lg w-full relative ${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-white text-gray-800'}`}>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          className={`absolute top-4 right-4 ${darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-500 hover:text-gray-700'}`}
         >
           ✖
         </button>
@@ -39,39 +40,42 @@ const FormTugas = () => {
   const [pesertaList, setPesertaList] = useState([]);
   const [selectedPesertaId, setSelectedPesertaId] = useState("");
 
-   // Pagination states
-   const [currentPage, setCurrentPage] = useState(1);
-   const [itemsPerPage] = useState(7);
-   const [totalPages, setTotalPages] = useState(0);
- 
-   // Pagination functions
-   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-   const goToFirstPage = () => setCurrentPage(1);
-   const goToLastPage = () => setCurrentPage(totalPages);
-   const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-   const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
- 
-   // Filter and sort tugas
-   const filteredTugasPaging = rekapanTugas
-     .filter((tugas) =>
-       tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
-     )
-     .sort((a, b) => {
-       const namaA = a.peserta?.nama || '';
-       const namaB = b.peserta?.nama || '';
-       return namaA.localeCompare(namaB);
-     });
- 
-   // Update total pages when filtered data changes
-   useEffect(() => {
-     setTotalPages(Math.ceil(filteredTugasPaging.length / itemsPerPage));
-     setCurrentPage(1); // Reset to first page when filter changes
-   }, [filteredTugasPaging.length, itemsPerPage]);
- 
-   // Get current items for the current page
-   const indexOfLastItem = currentPage * itemsPerPage;
-   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-   const currentItems = filteredTugasPaging.slice(indexOfFirstItem, indexOfLastItem);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Tambah DarkModeContext
+  const { darkMode } = useContext(DarkModeContext);
+
+  // Pagination functions
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToLastPage = () => setCurrentPage(totalPages);
+  const goToPreviousPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  // Filter and sort tugas
+  const filteredTugasPaging = rekapanTugas
+    .filter((tugas) =>
+      tugas.deskripsi.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const namaA = a.peserta?.nama || '';
+      const namaB = b.peserta?.nama || '';
+      return namaA.localeCompare(namaB);
+    });
+
+  // Update total pages when filtered data changes
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredTugasPaging.length / itemsPerPage));
+    setCurrentPage(1); // Reset to first page when filter changes
+  }, [filteredTugasPaging.length, itemsPerPage]);
+
+  // Get current items for the current page
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredTugasPaging.slice(indexOfFirstItem, indexOfLastItem);
 
   const fetchPesertaList = async () => {
     try {
@@ -92,23 +96,6 @@ const FormTugas = () => {
       console.error("Error fetching peserta:", error);
     }
   };
-
-  // Kemudian di bagian dropdown peserta:
-  <select
-    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
-    value={selectedPesertaId}
-    onChange={(e) => setSelectedPesertaId(e.target.value)}
-    required
-  >
-    <option value="">Pilih Peserta</option>
-    {pesertaList
-      .filter((peserta) => peserta.status_peserta === "Aktif")
-      .map((peserta) => (
-        <option key={peserta.id} value={peserta.id}>
-          {peserta.nama} - {peserta.nim} - {peserta.jurusan}
-        </option>
-      ))}
-  </select>;
 
   const fetchTugas = async () => {
     try {
@@ -139,7 +126,6 @@ const FormTugas = () => {
   }, []);
 
   const handleOpenAddModal = () => {
-    // Reset semua state ke nilai awal
     setDeskripsiTugas("");
     setDeadline("");
     setSelectedPesertaId("");
@@ -149,7 +135,6 @@ const FormTugas = () => {
   };
 
   const handleCloseModal = () => {
-    // Reset semua state ke nilai awal
     setShowPopup(false);
     setDeskripsiTugas("");
     setDeadline("");
@@ -216,13 +201,7 @@ const FormTugas = () => {
       }
 
       fetchTugas();
-
-      setShowPopup(false);
-      setDeskripsiTugas("");
-      setDeadline("");
-      setSelectedPesertaId("");
-      setIsEdit(false);
-      setEditTugasId(null);
+      handleCloseModal();
     } catch (error) {
       console.error("Error submitting tugas:", error);
       Swal.fire({
@@ -236,25 +215,16 @@ const FormTugas = () => {
   };
 
   const handleEdit = (tugas) => {
-    // Format deadline ke format datetime-local yang sesuai
     const deadlineDate = new Date(tugas.deadline);
-    const formattedDeadline = deadlineDate.toISOString().slice(0, 16); // format: "YYYY-MM-DDTHH:mm"
+    const formattedDeadline = deadlineDate.toISOString().slice(0, 16);
 
     setDeskripsiTugas(tugas.deskripsi);
     setDeadline(formattedDeadline);
     setShowPopup(true);
     setIsEdit(true);
     setEditTugasId(tugas.id);
-
-    // Log untuk debugging
-    console.log("Edit Tugas:", {
-      id: tugas.id,
-      deskripsi: tugas.deskripsi,
-      deadline: formattedDeadline,
-    });
   };
 
-  // Update handleDeleteAdmin juga dengan Sweet Alert
   const handleDeleteAdmin = async (id) => {
     Swal.fire({
       title: "Apakah anda yakin?",
@@ -289,27 +259,27 @@ const FormTugas = () => {
           Swal.fire({
             icon: "error",
             title: "Oops...",
-            text: "Terjadi kesalahan saat menghapus tugas",
+            text: "Anda tidak memiliki hak untuk tugas ini",
           });
         }
       }
     });
   };
 
-  if (isLoading) return <div className="text-center p-4">Loading...</div>;
-  if (error) return <div className="text-center text-red-600 p-4">{error}</div>;
+  if (isLoading) return <div className={`text-center p-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading...</div>;
+  if (error) return <div className={`text-center p-4 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>{error}</div>;
 
   return (
-    <div className="flex max-w-[95rem] mx-auto">
+    <div className={`flex min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-indigo-900' : 'bg-gradient-to-br from-gray-50 to-indigo-50'} transition-colors duration-300`}>
       <Sidebar />
-      <div className="flex-1 ml-[250px] mx-auto h-screen">
+      <div className="flex-1 md:ml-[250px]">
         <Navbar />
-        <main className="p-[100px]">
-          <div className="shadow-lg p-6 bg-white rounded-md mt-10">
-            <h2 className="text-blue-600/90 text-3xl font-bold">
+        <main className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
+          <div className={`shadow-lg p-6 rounded-md ${darkMode ? 'bg-gray-800 text-gray-200 border-gray-700' : 'bg-white text-gray-800 border-gray-100'} border transition-colors duration-300`}>
+            <h2 className={`text-3xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600/90'}`}>
               Rekapan Tugas
             </h2>
-            <p className="text-sm text-gray-500">Total: {rekapanTugas.length} Tugas</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total: {rekapanTugas.length} Tugas</p>
 
             <div className="my-4 flex items-center justify-center space-x-4">
               <Input
@@ -318,7 +288,7 @@ const FormTugas = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 px={20}
-                className="w-full text-center max-w-lg border border-blue-600/90 rounded-lg"
+                className={`w-full text-center max-w-lg border rounded-lg ${darkMode ? 'border-blue-400/90 bg-gray-700 text-gray-200' : 'border-blue-600/90 bg-white text-gray-800'} transition-colors`}
               />
 
               <Button
@@ -326,104 +296,100 @@ const FormTugas = () => {
                 variant="blue"
                 ikon={<Plus />}
                 onClick={handleOpenAddModal}
+                className={`${darkMode ? 'bg-blue-500 hover:bg-blue-600' : 'bg-blue-600/90 hover:bg-blue-700/90'} text-white transition-colors`}
               />
             </div>
 
             <div className="flex flex-col min-h-[600px]">
               <div className="flex-grow overflow-auto">
                 <table className="w-full border-collapse text-center">
-              <thead>
-                <tr className="bg-blue-600/90 text-white border-lg">
-                  <th className="p-2 border border-gray-300">No</th>
-                  <th className="p-2 border border-gray-300">Peserta</th>
-                  <th className="p-2 border border-gray-300">Deadline</th>
-                  <th className="p-2 border border-gray-300">Status</th>
-                  <th className="p-2 border border-gray-300">Pemberi Tugas</th>
-                  <th className="p-2 border border-gray-300">Deskripsi</th>
-                  <th className="p-2 border border-gray-300">Catatan</th>
-                  <th className="p-2 border border-gray-300">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-              {currentItems.map((tugas, index) => (
-                  <tr
-                    key={tugas.id}
-                    className={`${
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    } hover:bg-blue-50`}
-                  >
-                    <td className="border border-gray-300 p-4 text-sm">
+                  <thead>
+                    <tr className={`${darkMode ? 'bg-blue-500/90 text-white' : 'bg-blue-600/90 text-white'}`}>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>No</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Peserta</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Deadline</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Status</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Pemberi Tugas</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Deskripsi</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Catatan</th>
+                      <th className={`p-2 border ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems.map((tugas, index) => (
+                      <tr
+                        key={tugas.id}
+                        className={`${index % 2 === 0 ? (darkMode ? 'bg-gray-700' : 'bg-gray-50') : (darkMode ? 'bg-gray-800' : 'bg-white')} hover:${darkMode ? 'bg-gray-500' : 'bg-blue-50'} ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}
+                      >
+                        <td className={`border p-4 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
                           {indexOfFirstItem + index + 1}
                         </td>
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {tugas.peserta?.nama || "-"}
-                    </td>
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {new Date(tugas.deadline).toLocaleDateString("id-ID")}
-                    </td>
-                    <td className="border border-gray-300 p-2 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full ${
-                          tugas.status === "Selesai"
-                            ? "bg-teal-100 text-green-800"
-                            : tugas.status === "Terlambat"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {tugas.status}
-                      </span>
-                    </td>
-
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {tugas.pegawai?.nama || "-"}
-                    </td>
-                    <td className="border border-gray-300 p-2 text-sm"> 
-                      {tugas.deskripsi} </td>
-                    <td className="border border-gray-300 p-2 text-sm">
-                      {tugas.catatan}
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      <div className="flex items-center justify-center space-x-4">
-                        <div className="p-2 rounded-lg bg-white shadow-lg">
-                          <Pencil
-                            className="text-yellow-600 cursor-pointer"
-                            onClick={() => handleEdit(tugas)}
-                          />
-                        </div>
-                        <div className="p-2 rounded-lg bg-white shadow-lg">
-                          <Trash2
-                            className="text-red-600 cursor-pointer"
-                            onClick={() => handleDeleteAdmin(tugas.id)}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-             {/* Pagination Controls */}
-             <div className="mt-auto pt-4 border-t">
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          {tugas.peserta?.nama || "-"}
+                        </td>
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          {new Date(tugas.deadline).toLocaleDateString("id-ID")}
+                        </td>
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full ${
+                              tugas.status === "Selesai"
+                                ? darkMode ? 'bg-teal-900 text-green-300' : 'bg-teal-100 text-green-800'
+                                : tugas.status === "Terlambat"
+                                ? darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800'
+                                : darkMode ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {tugas.status}
+                          </span>
+                        </td>
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          {tugas.pegawai?.nama || "-"}
+                        </td>
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          {tugas.deskripsi}
+                        </td>
+                        <td className={`border p-2 text-sm ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          {tugas.catatan}
+                        </td>
+                        <td className={`border p-2 ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                          <div className="flex items-center justify-center space-x-4">
+                            <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}>
+                              <Pencil
+                                className={`${darkMode ? 'text-yellow-400' : 'text-yellow-600'} cursor-pointer`}
+                                onClick={() => handleEdit(tugas)}
+                              />
+                            </div>
+                            <div className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}>
+                              <Trash2
+                                className={`${darkMode ? 'text-red-400' : 'text-red-600'} cursor-pointer`}
+                                onClick={() => handleDeleteAdmin(tugas.id)}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* Pagination Controls */}
+              <div className="mt-auto pt-4 border-t">
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={goToFirstPage}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="First page"
+                    className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                   >
                     <ChevronsLeft className="h-5 w-5" />
                   </button>
                   <button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Previous page"
+                    className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
-
                   <div className="flex gap-1">
                     {[...Array(totalPages)].map((_, index) => {
                       const pageNumber = index + 1;
@@ -438,9 +404,9 @@ const FormTugas = () => {
                             onClick={() => paginate(pageNumber)}
                             className={`px-4 py-2 rounded-lg border ${
                               currentPage === pageNumber
-                                ? "bg-blue-600/90 text-white"
-                                : "hover:bg-gray-100"
-                            }`}
+                                ? darkMode ? 'bg-blue-500 text-white' : 'bg-blue-600/90 text-white'
+                                : darkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-600'
+                            } transition-colors`}
                           >
                             {pageNumber}
                           </button>
@@ -449,30 +415,26 @@ const FormTugas = () => {
                         pageNumber === currentPage - 2 ||
                         pageNumber === currentPage + 2
                       ) {
-                        return <span key={pageNumber} className="px-2 py-1">...</span>;
+                        return <span key={pageNumber} className={`px-2 py-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>...</span>;
                       }
                       return null;
                     })}
                   </div>
-
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Next page"
+                    className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
                   <button
                     onClick={goToLastPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Last page"
+                    className={`p-2 rounded-lg border ${darkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-300 hover:bg-gray-100 text-gray-600'} disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
                   >
                     <ChevronsRight className="h-5 w-5" />
                   </button>
-
-                  <span className="text-sm text-gray-600 ml-4">
+                  <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-4`}>
                     Halaman {currentPage} dari {totalPages}
                   </span>
                 </div>
@@ -480,21 +442,19 @@ const FormTugas = () => {
             </div>
           </div>
 
-          
-
-          <Modal isOpen={showPopup} onClose={() => setShowPopup(false)}>
+          <Modal isOpen={showPopup} onClose={handleCloseModal} darkMode={darkMode}>
             <form onSubmit={handleSubmit}>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                 {isEdit ? "Edit Tugas Magang" : "Form Tugas Magang"}
               </h2>
 
               {!isEdit && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Peserta
                   </label>
                   <select
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+                    className={`w-full px-3 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-800'}`}
                     value={selectedPesertaId}
                     onChange={(e) => setSelectedPesertaId(e.target.value)}
                     required
@@ -510,11 +470,11 @@ const FormTugas = () => {
               )}
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   Deskripsi Tugas
                 </label>
                 <textarea
-                  className="w-full px-3 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md"
+                  className={`w-full px-3 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 shadow-md ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-800'}`}
                   placeholder="Masukkan deskripsi tugas"
                   value={deskripsiTugas}
                   onChange={(e) => setDeskripsiTugas(e.target.value)}
@@ -524,7 +484,7 @@ const FormTugas = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   Deadline Tugas
                 </label>
                 <Input
@@ -532,6 +492,7 @@ const FormTugas = () => {
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                   required
+                  className={`${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200' : 'border-gray-300 bg-white text-gray-800'}`}
                 />
               </div>
 
@@ -540,6 +501,7 @@ const FormTugas = () => {
                   label={isEdit ? "Update Tugas" : "Tambah Tugas"}
                   variant="green"
                   type="submit"
+                  className={`${darkMode ? 'bg-green-500 hover:bg-green-600' : 'bg-green-600 hover:bg-green-700'} text-white`}
                 />
               </div>
             </form>

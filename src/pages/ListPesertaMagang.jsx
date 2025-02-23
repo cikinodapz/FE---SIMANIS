@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -22,30 +22,55 @@ import {
   Share2Icon,
   WrenchIcon,
   HelpCircle,
-  Trash2
+  Trash2,
 } from "lucide-react";
+import { DarkModeContext } from "../context/DarkModeContext";
 
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
+  const { darkMode } = useContext(DarkModeContext);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-        <h3 className="text-lg font-semibold mb-2">Generate Sertifikat</h3>
-        <p className="text-gray-600 mb-4">
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`rounded-lg p-6 max-w-sm w-full mx-4 ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <h3
+          className={`text-lg font-semibold mb-2 ${
+            darkMode ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
+          Generate Sertifikat
+        </h3>
+        <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mb-4`}>
           Apakah Anda yakin ingin men-generate sertifikat untuk peserta{" "}
           {pesertaName}?
         </p>
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              darkMode
+                ? "text-gray-300 bg-gray-700 hover:bg-gray-600"
+                : "text-gray-700 bg-gray-100 hover:bg-gray-200"
+            }`}
           >
             Batal
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+              darkMode
+                ? "bg-blue-500 hover:bg-blue-600"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             Generate
           </button>
@@ -56,12 +81,12 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
 };
 
 const BiodataModal = ({ isOpen, onClose, biodata }) => {
+  const { darkMode } = useContext(DarkModeContext);
   const [existingFoto, setExistingFoto] = useState(null);
 
   useEffect(() => {
     const fetchFoto = async () => {
       if (biodata && biodata.id) {
-        // Pastikan ada biodata.id
         try {
           const token = localStorage.getItem("accessToken");
           const response = await axios.get(
@@ -95,41 +120,49 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      style={{
-        animation: "fadeIn 0.3s ease-out",
-        "@keyframes fadeIn": {
-          from: { opacity: 0 },
-          to: { opacity: 1 },
-        },
-      }}
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50 p-4`}
     >
       <div
-        className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 w-[95%] max-w-6xl max-h-[85vh] overflow-y-auto shadow-2xl"
-        style={{
-          animation: "slideIn 0.3s ease-out",
-          "@keyframes slideIn": {
-            from: { transform: "translateY(-20px)", opacity: 0 },
-            to: { transform: "translateY(0)", opacity: 1 },
-          },
-        }}
+        className={`${
+          darkMode
+            ? "bg-gray-800 border-gray-700"
+            : "bg-gradient-to-br from-white to-gray-50 border-gray-100"
+        } rounded-2xl p-8 w-[95%] max-w-6xl max-h-[85vh] overflow-y-auto shadow-2xl transition-colors duration-300`}
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 border-b pb-4">
+        <div
+          className={`flex justify-between items-center mb-8 ${
+            darkMode ? "border-gray-700" : "border-gray-200"
+          } border-b pb-4`}
+        >
           <div>
-            <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent">
+            <h3
+              className={`text-3xl font-bold ${
+                darkMode
+                  ? "bg-gradient-to-r from-blue-400 to-blue-400 bg-clip-text text-transparent"
+                  : "bg-gradient-to-r from-blue-600 to-blue-600 bg-clip-text text-transparent"
+              }`}
+            >
               Detail Biodata Peserta
             </h3>
-            <p className="text-gray-500 mt-1">
+            <p
+              className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+            >
               Informasi lengkap peserta magang
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200"
+            className={`p-2 rounded-full transition-all duration-200 ${
+              darkMode
+                ? "hover:bg-gray-700 text-gray-400"
+                : "hover:bg-gray-100 text-gray-500"
+            }`}
           >
             <svg
-              className="w-6 h-6 text-gray-500"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -149,7 +182,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           <div className="relative">
             {existingFoto ? (
               <div className="relative group">
-                <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-blue-100 shadow-lg">
+                <div
+                  className={`w-32 h-32 rounded-full overflow-hidden ${
+                    darkMode ? "ring-blue-500" : "ring-blue-100"
+                  } ring-4 shadow-lg`}
+                >
                   <img
                     src={existingFoto}
                     alt="Foto Profil"
@@ -162,8 +199,14 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                     crossOrigin="anonymous"
                   />
                 </div>
-                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div
+                  className={`absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center`}
+                >
+                  <span
+                    className={`${
+                      darkMode ? "text-gray-200" : "text-white"
+                    } opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                  >
                     <svg
                       className="w-8 h-8"
                       fill="none"
@@ -181,9 +224,17 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                 </div>
               </div>
             ) : (
-              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center ring-4 ring-blue-100 shadow-lg">
+              <div
+                className={`w-32 h-32 rounded-full ${
+                  darkMode ? "bg-gray-700" : "bg-gray-200"
+                } flex items-center justify-center ${
+                  darkMode ? "ring-blue-500" : "ring-blue-100"
+                } ring-4 shadow-lg`}
+              >
                 <svg
-                  className="w-16 h-16 text-gray-400"
+                  className={`w-16 h-16 ${
+                    darkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -197,7 +248,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                 </svg>
               </div>
             )}
-            <div className="absolute -bottom-2 -right-2 bg-blue-500 rounded-full p-2 shadow-lg">
+            <div
+              className={`absolute -bottom-2 -right-2 ${
+                darkMode ? "bg-blue-500" : "bg-blue-500"
+              } rounded-full p-2 shadow-lg`}
+            >
               <svg
                 className="w-4 h-4 text-white"
                 fill="none"
@@ -221,8 +276,18 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{biodata.nama}</h2>
-            <div className="mt-1 flex items-center gap-4 text-gray-600">
+            <h2
+              className={`text-2xl font-bold ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              {biodata.nama}
+            </h2>
+            <div
+              className={`mt-1 flex items-center gap-4 ${
+                darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
               <div className="flex items-center gap-1">
                 <svg
                   className="w-4 h-4"
@@ -239,7 +304,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                 </svg>
                 <span
                   className={`${
-                    !biodata.unit_kerja ? "text-gray-400 italic" : ""
+                    !biodata.unit_kerja
+                      ? darkMode
+                        ? "text-gray-500 italic"
+                        : "text-gray-400 italic"
+                      : ""
                   }`}
                 >
                   {biodata.unit_kerja || "Unit kerja belum ada"}
@@ -286,7 +355,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           <span
             className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
               biodata.status_peserta === "Aktif"
-                ? "bg-teal-100 text-teal-800"
+                ? darkMode
+                  ? "bg-teal-900 text-teal-300"
+                  : "bg-teal-100 text-teal-800"
+                : darkMode
+                ? "bg-red-900 text-red-300"
                 : "bg-red-100 text-red-800"
             }`}
           >
@@ -295,7 +368,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           <span
             className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
               biodata.status_sertifikat === "Selesai"
-                ? "bg-blue-100 text-blue-800"
+                ? darkMode
+                  ? "bg-blue-900 text-blue-300"
+                  : "bg-blue-100 text-blue-800"
+                : darkMode
+                ? "bg-yellow-900 text-yellow-300"
                 : "bg-yellow-100 text-yellow-800"
             }`}
           >
@@ -305,11 +382,25 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Informasi Pribadi */}
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
+          <div
+            className={`${
+              darkMode ? "bg-gray-700" : "bg-white"
+            } p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300`}
+          >
+            <div
+              className={`flex items-center gap-2 mb-4 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <div
+                className={`p-2 ${
+                  darkMode ? "bg-blue-900" : "bg-blue-100"
+                } rounded-lg`}
+              >
                 <svg
-                  className="w-5 h-5 text-blue-600"
+                  className={`w-5 h-5 ${
+                    darkMode ? "text-blue-400" : "text-blue-600"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -322,9 +413,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                   />
                 </svg>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800">
-                Informasi Pribadi
-              </h4>
+              <h4 className="text-xl font-semibold">Informasi Pribadi</h4>
             </div>
             <div className="space-y-3">
               <InfoItem label="Nama" value={biodata.nama} />
@@ -350,11 +439,25 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           </div>
 
           {/* Informasi Keluarga */}
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-purple-100 rounded-lg">
+          <div
+            className={`${
+              darkMode ? "bg-gray-700" : "bg-white"
+            } p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300`}
+          >
+            <div
+              className={`flex items-center gap-2 mb-4 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <div
+                className={`p-2 ${
+                  darkMode ? "bg-purple-900" : "bg-purple-100"
+                } rounded-lg`}
+              >
                 <svg
-                  className="w-5 h-5 text-purple-600"
+                  className={`w-5 h-5 ${
+                    darkMode ? "text-purple-400" : "text-purple-600"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -367,9 +470,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                   />
                 </svg>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800">
-                Informasi Keluarga
-              </h4>
+              <h4 className="text-xl font-semibold">Informasi Keluarga</h4>
             </div>
             <div className="space-y-3">
               <InfoItem label="Anak ke-" value={biodata.anak_ke} />
@@ -382,11 +483,25 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           </div>
 
           {/* Informasi Alamat */}
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-orange-100 rounded-lg">
+          <div
+            className={`${
+              darkMode ? "bg-gray-700" : "bg-white"
+            } p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2 mt-6`}
+          >
+            <div
+              className={`flex items-center gap-2 mb-4 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <div
+                className={`p-2 ${
+                  darkMode ? "bg-orange-900" : "bg-orange-100"
+                } rounded-lg`}
+              >
                 <svg
-                  className="w-5 h-5 text-orange-600"
+                  className={`w-5 h-5 ${
+                    darkMode ? "text-orange-400" : "text-orange-600"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -405,9 +520,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                   />
                 </svg>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800">
-                Informasi Alamat
-              </h4>
+              <h4 className="text-xl font-semibold">Informasi Alamat</h4>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
@@ -428,11 +541,25 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           </div>
 
           {/* Informasi Magang */}
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-teal-100 rounded-lg">
+          <div
+            className={`${
+              darkMode ? "bg-gray-700" : "bg-white"
+            } p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2`}
+          >
+            <div
+              className={`flex items-center gap-2 mb-4 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <div
+                className={`p-2 ${
+                  darkMode ? "bg-teal-900" : "bg-teal-100"
+                } rounded-lg`}
+              >
                 <svg
-                  className="w-5 h-5 text-teal-600"
+                  className={`w-5 h-5 ${
+                    darkMode ? "text-teal-400" : "text-teal-600"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -445,9 +572,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                   />
                 </svg>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800">
-                Informasi Magang
-              </h4>
+              <h4 className="text-xl font-semibold">Informasi Magang</h4>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
@@ -485,11 +610,25 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
           </div>
 
           {/* Riwayat Pendidikan */}
-          <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
+          <div
+            className={`${
+              darkMode ? "bg-gray-700" : "bg-white"
+            } p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 md:col-span-2`}
+          >
+            <div
+              className={`flex items-center gap-2 mb-4 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <div
+                className={`p-2 ${
+                  darkMode ? "bg-blue-900" : "bg-blue-100"
+                } rounded-lg`}
+              >
                 <svg
-                  className="w-5 h-5 text-blue-600"
+                  className={`w-5 h-5 ${
+                    darkMode ? "text-blue-400" : "text-blue-600"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -508,9 +647,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                   />
                 </svg>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800">
-                Riwayat Pendidikan
-              </h4>
+              <h4 className="text-xl font-semibold">Riwayat Pendidikan</h4>
             </div>
             {biodata.RiwayatPendidikan &&
             biodata.RiwayatPendidikan.length > 0 ? (
@@ -518,9 +655,17 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                 {biodata.RiwayatPendidikan.map((riwayat, index) => (
                   <div
                     key={index}
-                    className="bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    className={`${
+                      darkMode ? "bg-gray-600" : "bg-gray-50"
+                    } p-4 rounded-lg ${
+                      darkMode ? "hover:bg-gray-500" : "hover:bg-gray-100"
+                    } transition-colors duration-200`}
                   >
-                    <h5 className="font-semibold text-blue-600 mb-2">
+                    <h5
+                      className={`font-semibold ${
+                        darkMode ? "text-blue-400" : "text-blue-600"
+                      } mb-2`}
+                    >
                       Pendidikan {index + 1}
                     </h5>
                     <div className="space-y-2">
@@ -532,7 +677,11 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 italic">
+              <p
+                className={`${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                } italic`}
+              >
                 Tidak ada data riwayat pendidikan
               </p>
             )}
@@ -544,18 +693,258 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
 };
 
 // Komponen InfoItem yang diperbarui untuk menangani teks panjang
-const InfoItem = ({ label, value, className = "" }) => (
-  <div
-    className={`flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 ${className}`}
-  >
-    <span className="text-gray-600 whitespace-nowrap">{label}:</span>
-    <span className="font-medium text-gray-800 sm:text-right max-w-[300px] break-words">
-      {value || "-"}
-    </span>
-  </div>
-);
+const InfoItem = ({ label, value, className = "" }) => {
+  const { darkMode } = useContext(DarkModeContext);
+
+  return (
+    <div
+      className={`flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 ${className}`}
+    >
+      <span
+        className={`${
+          darkMode ? "text-gray-400" : "text-gray-600"
+        } whitespace-nowrap`}
+      >
+        {label}:
+      </span>
+      <span
+        className={`font-medium ${
+          darkMode ? "text-gray-200" : "text-gray-800"
+        } sm:text-right max-w-[300px] break-words`}
+      >
+        {value || "-"}
+      </span>
+    </div>
+  );
+};
+
+const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
+  const { darkMode } = useContext(DarkModeContext);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`rounded-lg p-6 max-w-sm w-full mx-4 ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <div className="flex items-center justify-center mb-4">
+          <div
+            className={`p-3 rounded-full ${
+              darkMode ? "bg-red-900" : "bg-red-100"
+            }`}
+          >
+            <AlertCircle
+              className={`w-8 h-8 ${
+                darkMode ? "text-red-300" : "text-red-600"
+              }`}
+            />
+          </div>
+        </div>
+        <h3
+          className={`text-lg font-semibold text-center mb-2 ${
+            darkMode ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
+          Hapus Peserta
+        </h3>
+        <p
+          className={`text-center mb-6 ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
+          Apakah Anda yakin ingin menghapus peserta{" "}
+          <span className="font-semibold">{pesertaName}</span>? Tindakan ini
+          tidak dapat dibatalkan.
+        </p>
+        <div className="flex justify-center space-x-3">
+          <button
+            onClick={onClose}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              darkMode
+                ? "text-gray-300 bg-gray-700 hover:bg-gray-600"
+                : "text-gray-700 bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+              darkMode
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Add the new LoadingScreen component for certificate generation
+const LoadingScreen = () => {
+  const { darkMode } = useContext(DarkModeContext);
+
+  return (
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <div
+          className={`absolute top-0 left-0 w-full h-1 ${
+            darkMode ? "bg-gray-700" : "bg-gray-200"
+          }`}
+        >
+          <div
+            className={`loading-bar h-full ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            }`}
+          ></div>
+        </div>
+
+        <div className="w-20 h-20 mb-4 relative">
+          <div
+            className={`spin-slow absolute inset-0 border-4 ${
+              darkMode ? "border-blue-700" : "border-blue-200"
+            } rounded-full`}
+          ></div>
+          <div
+            className={`spin-fast absolute inset-0 border-4 ${
+              darkMode ? "border-blue-500" : "border-blue-600"
+            } rounded-full border-t-transparent`}
+          ></div>
+          <div className="absolute inset-2 flex items-center justify-center">
+            <Download
+              className={`w-10 h-10 ${
+                darkMode ? "text-blue-400" : "text-blue-600"
+              } pulse-icon`}
+            />
+          </div>
+        </div>
+
+        <h3
+          className={`text-xl font-bold mb-2 pulse-text ${
+            darkMode ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
+          Generating Sertifikat
+        </h3>
+        <p
+          className={`text-center mb-4 ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
+          Mohon tunggu sebentar, sistem sedang membuat sertifikat Anda...
+        </p>
+
+        <div className="flex gap-1">
+          <div
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
+            style={{ animationDelay: "0ms" }}
+          ></div>
+          <div
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
+            style={{ animationDelay: "200ms" }}
+          ></div>
+          <div
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
+            style={{ animationDelay: "400ms" }}
+          ></div>
+        </div>
+
+        <style jsx>{`
+          @keyframes loading {
+            0% {
+              width: 0%;
+            }
+            100% {
+              width: 100%;
+            }
+          }
+
+          @keyframes spin {
+            0% {
+              transform: rotate(0deg);
+            }
+            100% {
+              transform: rotate(360deg);
+            }
+          }
+
+          @keyframes pulse {
+            0%,
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.7;
+              transform: scale(0.95);
+            }
+          }
+
+          @keyframes bounce {
+            0%,
+            100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-4px);
+            }
+          }
+
+          .loading-bar {
+            animation: loading 2s ease-in-out infinite;
+          }
+
+          .spin-slow {
+            animation: spin 3s linear infinite;
+          }
+
+          .spin-fast {
+            animation: spin 1.5s linear infinite;
+          }
+
+          .pulse-icon {
+            animation: pulse 2s ease-in-out infinite;
+          }
+
+          .pulse-text {
+            animation: pulse 1.5s ease-in-out infinite;
+          }
+
+          .loading-dot {
+            animation: bounce 1s infinite;
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+};
 
 const ListPesertaMagang = () => {
+  const { darkMode } = useContext(DarkModeContext);
   const [daftarPesertaMagang, setDaftarPesertaMagang] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
@@ -568,17 +957,14 @@ const ListPesertaMagang = () => {
     pesertaName: "",
   });
 
-  // Add pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Modifikasi useEffect untuk mengambil data
   const [statusFilter, setStatusFilter] = useState("");
   const [unitKerjaFilter, setUnitKerjaFilter] = useState("");
   const [divisiStats, setDivisiStats] = useState([]);
 
-  // Helper function untuk menghitung jumlah peserta per divisi
   const getDivisiCount = (divisi) => {
     return (
       divisiStats.find(
@@ -594,8 +980,6 @@ const ListPesertaMagang = () => {
       try {
         const token = localStorage.getItem("accessToken");
         let url = "http://localhost:3000/admin/list-biodata";
-
-        // Tambahkan query parameters
         const params = new URLSearchParams();
         if (statusFilter) params.append("status_peserta", statusFilter);
         if (unitKerjaFilter) params.append("unit_kerja", unitKerjaFilter);
@@ -628,11 +1012,7 @@ const ListPesertaMagang = () => {
     handleSort(sortOrder);
   }, [sortOrder, daftarPesertaMagang]);
 
-  // Add pagination functions
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const goToFirstPage = () => setCurrentPage(1);
   const goToLastPage = () => setCurrentPage(totalPages);
   const goToPreviousPage = () =>
@@ -640,17 +1020,15 @@ const ListPesertaMagang = () => {
   const goToNextPage = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
-  // Update filtering and pagination logic
   const filteredPesertaMagangPaging = sortedPesertaMagang.filter((peserta) =>
     peserta.nama.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   useEffect(() => {
     setTotalPages(Math.ceil(filteredPesertaMagangPaging.length / itemsPerPage));
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   }, [filteredPesertaMagangPaging.length, itemsPerPage]);
 
-  // Get current items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredPesertaMagangPaging.slice(
@@ -682,7 +1060,6 @@ const ListPesertaMagang = () => {
       setLoading((prev) => ({ ...prev, [pesertaId]: true }));
       const token = localStorage.getItem("accessToken");
 
-      // Simulasi delay untuk loading screen (bisa dihapus di production)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const response = await axios.post(
@@ -695,42 +1072,42 @@ const ListPesertaMagang = () => {
         }
       );
 
-      // Tunggu loading screen selesai sebelum menampilkan success message
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Tampilkan success message dengan SweetAlert2
       await Swal.fire({
         icon: "success",
         title: "Sertifikat Berhasil Dibuat! 🎉",
         html: `
-        <div class="space-y-4">
-          <div class="flex items-center justify-center">
-            <svg class="w-16 h-16 text-green-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div class="space-y-4">
+            <div class="flex items-center justify-center">
+              <svg class="w-16 h-16 text-green-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p class="text-gray-${
+              darkMode ? "400" : "600"
+            }">Selamat! Sertifikat telah berhasil dibuat.</p>
+            <div class="text-sm text-blue-${darkMode ? "400" : "600"} mt-2">
+              Dokumen ini mencatat pencapaian dan kerja keras selama program magang.
+            </div>
           </div>
-          <p class="text-gray-600">Selamat! Sertifikat telah berhasil dibuat.</p>
-          <div class="text-sm text-blue-600 mt-2">
-            Dokumen ini mencatat pencapaian dan kerja keras selama program magang.
-          </div>
-        </div>
-      `,
+        `,
         timer: 3000,
         timerProgressBar: true,
         showConfirmButton: true,
         confirmButtonText: "Selesai",
-        confirmButtonColor: "#3b82f6",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3b82f6",
+        background: darkMode ? "#1f2937" : "#fff",
         customClass: {
           popup: "animate__animated animate__fadeInDown",
         },
         backdrop: `
-        rgba(59, 130, 246, 0.1)
-        left top
-        no-repeat
-      `,
+          rgba(59, 130, 246, 0.1)
+          left top
+          no-repeat
+        `,
       });
 
-      // Refresh data
       const updatedResponse = await axios.get(
         "http://localhost:3000/admin/list-biodata",
         {
@@ -751,7 +1128,8 @@ const ListPesertaMagang = () => {
         text: error.response?.data?.error || "Gagal generate sertifikat",
         icon: "error",
         confirmButtonText: "OK",
-        confirmButtonColor: "#d33",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
+        background: darkMode ? "#1f2937" : "#fff",
       });
     } finally {
       setIsGenerating(false);
@@ -782,39 +1160,81 @@ const ListPesertaMagang = () => {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const DownloadLoadingScreen = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
-          <div className="loading-bar h-full bg-blue-600"></div>
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <div
+          className={`absolute top-0 left-0 w-full h-1 ${
+            darkMode ? "bg-gray-700" : "bg-gray-200"
+          }`}
+        >
+          <div
+            className={`loading-bar h-full ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            }`}
+          ></div>
         </div>
 
         <div className="w-20 h-20 mb-4 relative">
-          <div className="spin-slow absolute inset-0 border-4 border-blue-200 rounded-full"></div>
-          <div className="spin-fast absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent"></div>
+          <div
+            className={`spin-slow absolute inset-0 border-4 ${
+              darkMode ? "border-blue-700" : "border-blue-200"
+            } rounded-full`}
+          ></div>
+          <div
+            className={`spin-fast absolute inset-0 border-4 ${
+              darkMode ? "border-blue-500" : "border-blue-600"
+            } rounded-full border-t-transparent`}
+          ></div>
           <div className="absolute inset-2 flex items-center justify-center">
-            <Download className="w-10 h-10 text-blue-600 pulse-icon" />
+            <Download
+              className={`w-10 h-10 ${
+                darkMode ? "text-blue-400" : "text-blue-600"
+              } pulse-icon`}
+            />
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
+        <h3
+          className={`text-xl font-bold mb-2 pulse-text ${
+            darkMode ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
           Downloading Sertifikat
         </h3>
-        <p className="text-gray-600 text-center mb-4">
+        <p
+          className={`text-center mb-4 ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
           Mohon tunggu sebentar, sistem sedang memproses download sertifikat
           Anda...
         </p>
 
         <div className="flex gap-1">
           <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
             style={{ animationDelay: "0ms" }}
           ></div>
           <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
             style={{ animationDelay: "200ms" }}
           ></div>
           <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-blue-500" : "bg-blue-600"
+            } rounded-full`}
             style={{ animationDelay: "400ms" }}
           ></div>
         </div>
@@ -888,46 +1308,6 @@ const ListPesertaMagang = () => {
     </div>
   );
 
-  // Add this DeleteConfirmDialog component near your other dialog components
-  const DeleteConfirmDialog = ({ isOpen, onClose, onConfirm, pesertaName }) => {
-    if (!isOpen) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-red-100 p-3 rounded-full">
-              <AlertCircle className="w-8 h-8 text-red-600" />
-            </div>
-          </div>
-          <h3 className="text-lg font-semibold text-center mb-2">
-            Hapus Peserta
-          </h3>
-          <p className="text-gray-600 text-center mb-6">
-            Apakah Anda yakin ingin menghapus peserta{" "}
-            <span className="font-semibold">{pesertaName}</span>? Tindakan ini
-            tidak dapat dibatalkan.
-          </p>
-          <div className="flex justify-center space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-            >
-              Batal
-            </button>
-            <button
-              onClick={onConfirm}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-            >
-              Hapus
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Add these state variables and functions in your ListPesertaMagang component
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     pesertaId: null,
@@ -965,16 +1345,16 @@ const ListPesertaMagang = () => {
         }
       );
 
-      // Show success message
       await Swal.fire({
         icon: "success",
         title: "Berhasil Menghapus Peserta",
         text: "Data peserta telah dihapus secara permanen",
         timer: 2000,
         showConfirmButton: false,
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
       });
 
-      // Refresh data
       const response = await axios.get(
         "http://localhost:3000/admin/list-biodata",
         {
@@ -996,6 +1376,8 @@ const ListPesertaMagang = () => {
         text:
           error.response?.data?.error ||
           "Terjadi kesalahan saat menghapus peserta",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
       });
     } finally {
       setIsDeleting(false);
@@ -1003,144 +1385,81 @@ const ListPesertaMagang = () => {
     }
   };
 
-  // Add the Loading Screen for delete operation
   const DeleteLoadingScreen = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
-          <div className="loading-bar h-full bg-red-600"></div>
+    <div
+      className={`fixed inset-0 ${
+        darkMode ? "bg-black/70" : "bg-black/50"
+      } flex items-center justify-center z-50`}
+    >
+      <div
+        className={`p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
+        <div
+          className={`absolute top-0 left-0 w-full h-1 ${
+            darkMode ? "bg-gray-700" : "bg-gray-200"
+          }`}
+        >
+          <div
+            className={`loading-bar h-full ${
+              darkMode ? "bg-red-500" : "bg-red-600"
+            }`}
+          ></div>
         </div>
 
         <div className="w-20 h-20 mb-4 relative">
-          <div className="spin-slow absolute inset-0 border-4 border-red-200 rounded-full"></div>
-          <div className="spin-fast absolute inset-0 border-4 border-red-600 rounded-full border-t-transparent"></div>
+          <div
+            className={`spin-slow absolute inset-0 border-4 ${
+              darkMode ? "border-red-700" : "border-red-200"
+            } rounded-full`}
+          ></div>
+          <div
+            className={`spin-fast absolute inset-0 border-4 ${
+              darkMode ? "border-red-500" : "border-red-600"
+            } rounded-full border-t-transparent`}
+          ></div>
           <div className="absolute inset-2 flex items-center justify-center">
-            <AlertCircle className="w-10 h-10 text-red-600 pulse-icon" />
+            <AlertCircle
+              className={`w-10 h-10 ${
+                darkMode ? "text-red-400" : "text-red-600"
+              } pulse-icon`}
+            />
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
+        <h3
+          className={`text-xl font-bold mb-2 pulse-text ${
+            darkMode ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
           Menghapus Peserta
         </h3>
-        <p className="text-gray-600 text-center mb-4">
+        <p
+          className={`text-center mb-4 ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
           Mohon tunggu sebentar, sistem sedang menghapus data peserta...
         </p>
 
         <div className="flex gap-1">
           <div
-            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-red-500" : "bg-red-600"
+            } rounded-full`}
             style={{ animationDelay: "0ms" }}
           ></div>
           <div
-            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-red-500" : "bg-red-600"
+            } rounded-full`}
             style={{ animationDelay: "200ms" }}
           ></div>
           <div
-            className="loading-dot w-2 h-2 bg-red-600 rounded-full"
-            style={{ animationDelay: "400ms" }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const handleDownload = async (pesertaId) => {
-    try {
-      setIsDownloading(true);
-      const token = localStorage.getItem("accessToken");
-
-      // Simulasi delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const response = await axios.get(
-        `http://localhost:3000/admin/download-sertifikat/${pesertaId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob",
-        }
-      );
-
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `sertifikat-${pesertaId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // Tampilkan success message
-      await Swal.fire({
-        icon: "success",
-        title: "Download Berhasil! 🎉",
-        text: "Sertifikat telah berhasil diunduh",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.error("Error downloading sertifikat:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Gagal Download",
-        text: error.response?.data?.message || "Gagal mendownload sertifikat",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const LoadingScreen = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-sm mx-4 relative overflow-hidden">
-        {/* Progress bar di bagian atas */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
-          <div className="loading-bar h-full bg-blue-600"></div>
-        </div>
-
-        {/* Icon animasi */}
-        <div className="w-20 h-20 mb-4 relative">
-          <div className="spin-slow absolute inset-0 border-4 border-blue-200 rounded-full"></div>
-          <div className="spin-fast absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent"></div>
-          <div className="absolute inset-2 flex items-center justify-center">
-            <svg
-              className="w-10 h-10 text-blue-600 pulse-icon"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-        </div>
-
-        {/* Teks loading */}
-        <h3 className="text-xl font-bold text-gray-800 mb-2 pulse-text">
-          Generating Sertifikat
-        </h3>
-        <p className="text-gray-600 text-center mb-4">
-          Mohon tunggu sebentar, sistem sedang memproses sertifikat Anda...
-        </p>
-
-        {/* Loading dots */}
-        <div className="flex gap-1">
-          <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
-            style={{ animationDelay: "0ms" }}
-          ></div>
-          <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
-            style={{ animationDelay: "200ms" }}
-          ></div>
-          <div
-            className="loading-dot w-2 h-2 bg-blue-600 rounded-full"
+            className={`loading-dot w-2 h-2 ${
+              darkMode ? "bg-red-500" : "bg-red-600"
+            } rounded-full`}
             style={{ animationDelay: "400ms" }}
           ></div>
         </div>
@@ -1209,45 +1528,83 @@ const ListPesertaMagang = () => {
           .loading-dot {
             animation: bounce 1s infinite;
           }
-
-          .loading-screen-enter {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-
-          .loading-screen-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 300ms, transform 300ms;
-          }
-
-          .loading-screen-exit {
-            opacity: 1;
-            transform: scale(1);
-          }
-
-          .loading-screen-exit-active {
-            opacity: 0;
-            transform: scale(0.9);
-            transition: opacity 300ms, transform 300ms;
-          }
         `}</style>
       </div>
     </div>
   );
 
+  const handleDownload = async (pesertaId) => {
+    try {
+      setIsDownloading(true);
+      const token = localStorage.getItem("accessToken");
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const response = await axios.get(
+        `http://localhost:3000/admin/download-sertifikat/${pesertaId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+        }
+      );
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `sertifikat-${pesertaId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Download Berhasil! 🎉",
+        text: "Sertifikat telah berhasil diunduh",
+        timer: 2000,
+        showConfirmButton: false,
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
+      });
+    } catch (error) {
+      console.error("Error downloading sertifikat:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Download",
+        text: error.response?.data?.message || "Gagal mendownload sertifikat",
+        background: darkMode ? "#1f2937" : "#fff",
+        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
-    <div className="flex max-w-[95rem] mx-auto">
+    <div
+      className={`flex min-h-screen ${
+        darkMode
+          ? "bg-gradient-to-br from-gray-900 to-indigo-900"
+          : "bg-gradient-to-br from-gray-50 to-indigo-50"
+      } transition-colors duration-300`}
+    >
       <Sidebar />
-      <div className="flex-1 ml-[250px] mx-auto min-h-screen flex flex-col">
+      <div className="flex-1 md:ml-[250px]">
         <Navbar />
-        <div className="p-[100px] flex-grow flex flex-col">
+        <div className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
           {alert.show && (
             <div
               className={`mb-4 p-4 rounded-lg flex items-center ${
                 alert.type === "success"
-                  ? "bg-teal-100 border border-teal-400 text-teal-700"
-                  : "bg-red-100 border border-red-400 text-red-700"
+                  ? darkMode
+                    ? "bg-teal-900 border-teal-700 text-teal-300"
+                    : "bg-teal-100 border-teal-400 text-teal-700"
+                  : darkMode
+                  ? "bg-red-900 border-red-700 text-red-300"
+                  : "bg-red-100 border-red-400 text-red-700"
               }`}
             >
               <AlertCircle className="w-5 h-5 mr-2" />
@@ -1262,15 +1619,29 @@ const ListPesertaMagang = () => {
             pesertaName={confirmDialog.pesertaName}
           />
 
-          <div className="shadow-lg p-8 bg-white rounded-xl flex flex-col flex-grow mt-10">
+          <div
+            className={`shadow-lg p-8 ${
+              darkMode
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-100"
+            } rounded-xl flex flex-col flex-grow`}
+          >
             {/* Header Section */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h1 className="text-blue-600/90 text-3xl font-bold">
+                  <h1
+                    className={`text-3xl font-bold ${
+                      darkMode ? "text-blue-400" : "text-blue-600"
+                    }`}
+                  >
                     Daftar Peserta Magang
                   </h1>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p
+                    className={`text-sm ${
+                      darkMode ? "text-gray-400" : "text-gray-500"
+                    } mt-1`}
+                  >
                     Kelola data peserta magang
                   </p>
                 </div>
@@ -1283,18 +1654,29 @@ const ListPesertaMagang = () => {
                   placeholder="Cari berdasarkan Nama Peserta..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className=" w-full text-center max-w-2xl mx-auto block shadow-sm border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`w-full text-center max-w-2xl mx-auto block shadow-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-gray-200"
+                      : "bg-white border-gray-200 text-gray-800"
+                  }`}
                 />
               </div>
 
               {/* Filters Container */}
-              {/* /*SINIII WARNA KOTAKNYA */}
-              <div className="bg-blue-300 p-6 rounded-xl mb-6">
+              <div
+                className={`${
+                  darkMode ? "bg-blue-700" : "bg-blue-300"
+                } p-6 rounded-xl mb-6`}
+              >
                 <div className="space-y-6">
                   {/* Status Filters */}
                   <div>
                     <div className="flex flex-col items-center">
-                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      <h3
+                        className={`text-sm font-medium mb-3 ${
+                          darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
                         Status Peserta
                       </h3>
                       <div className="flex gap-3">
@@ -1302,8 +1684,12 @@ const ListPesertaMagang = () => {
                           onClick={() => setStatusFilter("")}
                           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                             statusFilter === ""
-                              ? "bg-blue-600 text-white shadow-md"
-                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                              ? darkMode
+                                ? "bg-blue-500 text-white shadow-md"
+                                : "bg-blue-600 text-white shadow-md"
+                              : darkMode
+                              ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                           }`}
                         >
                           <Users className="w-4 h-4" />
@@ -1313,8 +1699,12 @@ const ListPesertaMagang = () => {
                           onClick={() => setStatusFilter("Aktif")}
                           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                             statusFilter === "Aktif"
-                              ? "bg-teal-600 text-white shadow-md"
-                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                              ? darkMode
+                                ? "bg-teal-500 text-white shadow-md"
+                                : "bg-teal-600 text-white shadow-md"
+                              : darkMode
+                              ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                           }`}
                         >
                           <UserCheck className="w-4 h-4" />
@@ -1324,8 +1714,12 @@ const ListPesertaMagang = () => {
                           onClick={() => setStatusFilter("Nonaktif")}
                           className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                             statusFilter === "Nonaktif"
-                              ? "bg-red-600 text-white shadow-md"
-                              : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                              ? darkMode
+                                ? "bg-red-500 text-white shadow-md"
+                                : "bg-red-600 text-white shadow-md"
+                              : darkMode
+                              ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                              : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                           }`}
                         >
                           <UserMinus className="w-4 h-4" />
@@ -1337,7 +1731,11 @@ const ListPesertaMagang = () => {
 
                   {/* Unit Kerja Filters */}
                   <div className="flex flex-col items-center">
-                    <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    <h3
+                      className={`text-sm font-medium mb-3 ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
                       Unit Kerja
                     </h3>
                     <div className="flex justify-center flex-wrap gap-3">
@@ -1345,73 +1743,92 @@ const ListPesertaMagang = () => {
                         onClick={() => setUnitKerjaFilter("")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === ""
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <Building2 className="w-4 h-4" />
                         <span>Semua</span>
                       </button>
 
-                      {/* Umum */}
                       <button
                         onClick={() => setUnitKerjaFilter("Umum")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === "Umum"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <Users className="w-4 h-4" />
                         <span>Umum</span>
                       </button>
 
-                      {/* IT */}
                       <button
                         onClick={() => setUnitKerjaFilter("IT")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === "IT"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <MonitorIcon className="w-4 h-4" />
                         <span>IT</span>
                       </button>
 
-                      {/* Diseminasi */}
                       <button
                         onClick={() => setUnitKerjaFilter("Diseminasi")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === "Diseminasi"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <Share2Icon className="w-4 h-4" />
                         <span>Diseminasi</span>
                       </button>
 
-                      {/* Teknis */}
                       <button
                         onClick={() => setUnitKerjaFilter("Teknis")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === "Teknis"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <WrenchIcon className="w-4 h-4" />
                         <span>Teknis</span>
                       </button>
 
-                      {/* Tidak Ditentukan */}
                       <button
                         onClick={() => setUnitKerjaFilter("Tidak Ditentukan")}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${
                           unitKerjaFilter === "Tidak Ditentukan"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-600 hover:bg-blue-300 border border-gray-200"
+                            ? darkMode
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-blue-600 text-white shadow-md"
+                            : darkMode
+                            ? "bg-gray-600 text-gray-200 hover:bg-gray-500 border-gray-500"
+                            : "bg-white text-gray-600 hover:bg-blue-300 border-gray-200"
                         }`}
                       >
                         <HelpCircle className="w-4 h-4" />
@@ -1423,17 +1840,47 @@ const ListPesertaMagang = () => {
               </div>
 
               <div className="flex flex-col items-center justify-center mt-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-100 shadow-sm px-8 py-3 rounded-xl flex items-center gap-3">
-                  <div className="bg-blue-500/10 p-2 rounded-lg">
-                    <FileSearch className="w-5 h-5 text-blue-600" />
+                <div
+                  className={`${
+                    darkMode
+                      ? "bg-gradient-to-r from-gray-700 to-gray-700 border-gray-600"
+                      : "bg-gradient-to-r from-blue-50 to-blue-50 border-blue-100"
+                  } border shadow-sm px-8 py-3 rounded-xl flex items-center gap-3`}
+                >
+                  <div
+                    className={`p-2 ${
+                      darkMode ? "bg-blue-900" : "bg-blue-500/10"
+                    } rounded-lg`}
+                  >
+                    <FileSearch
+                      className={`w-5 h-5 ${
+                        darkMode ? "text-blue-400" : "text-blue-600"
+                      }`}
+                    />
                   </div>
-                  <div className="flex items-center gap-1 text-gray-600">
+                  <div
+                    className={`flex items-center gap-1 ${
+                      darkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
                     <span className="font-medium">Menampilkan</span>
-                    <span className="px-3 py-1 bg-white rounded-lg font-bold text-blue-600 shadow-sm">
+                    <span
+                      className={`px-3 py-1 ${
+                        darkMode ? "bg-gray-600" : "bg-white"
+                      } rounded-lg font-bold ${
+                        darkMode ? "text-blue-400" : "text-blue-600"
+                      } shadow-sm`}
+                    >
                       {currentItems.length}
                     </span>
                     <span className="font-medium">dari</span>
-                    <span className="px-3 py-1 bg-white rounded-lg font-bold text-blue-600 shadow-sm">
+                    <span
+                      className={`px-3 py-1 ${
+                        darkMode ? "bg-gray-600" : "bg-white"
+                      } rounded-lg font-bold ${
+                        darkMode ? "text-blue-400" : "text-blue-600"
+                      } shadow-sm`}
+                    >
                       {filteredPesertaMagangPaging.length}
                     </span>
                     <span className="font-medium">peserta</span>
@@ -1443,7 +1890,11 @@ const ListPesertaMagang = () => {
                         <span
                           className={`px-3 py-1 rounded-lg font-semibold ${
                             statusFilter === "Aktif"
-                              ? "bg-teal-100 text-teal-700"
+                              ? darkMode
+                                ? "bg-teal-900 text-teal-300"
+                                : "bg-teal-100 text-teal-700"
+                              : darkMode
+                              ? "bg-red-900 text-red-300"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
@@ -1454,7 +1905,13 @@ const ListPesertaMagang = () => {
                     {unitKerjaFilter && (
                       <span className="flex items-center gap-1">
                         <span>di divisi</span>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg font-semibold">
+                        <span
+                          className={`px-3 py-1 ${
+                            darkMode ? "bg-blue-900" : "bg-blue-100"
+                          } ${
+                            darkMode ? "text-blue-300" : "text-blue-700"
+                          } rounded-lg font-semibold`}
+                        >
                           {unitKerjaFilter}
                         </span>
                       </span>
@@ -1463,123 +1920,162 @@ const ListPesertaMagang = () => {
                 </div>
               </div>
             </div>
-            <table className="w-full border-collapse text-center">
-              <thead>
-                <tr className="bg-blue-600/90 text-white border-rounded-lg">
-                  <th className="p-2 border border-gray-300">No</th>
-                  <th className="p-2 border border-gray-300">Nama Peserta</th>
-                  <th className="p-2 border border-gray-300">NIM / NISN</th>
-                  <th className="p-2 border border-gray-300">Jurusan</th>
-                  <th className="p-2 border border-gray-300">Unit Kerja</th>
-                  <th className="p-2 border border-gray-300">Status</th>
-                  <th className="p-2 border border-gray-300">Sertifikat</th>
-                  <th className="p-2 border border-gray-300">Download</th>
-                  <th className="p-2 border border-gray-300">Detail</th>
-                  <th className="p-2 border border-gray-300">Aksi</th>
 
+            <table
+              className={`w-full border-collapse text-center ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              }`}
+            >
+              <thead>
+                <tr
+                  className={`${
+                    darkMode ? "bg-blue-600/90" : "bg-blue-600/90"
+                  } text-white`}
+                >
+                  <th className="p-2">No</th>
+                  <th className="p-2">Nama Peserta</th>
+                  <th className="p-2">NIM / NISN</th>
+                  <th className="p-2">Jurusan</th>
+                  <th className="p-2">Unit Kerja</th>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Sertifikat</th>
+                  <th className="p-2">Download</th>
+                  <th className="p-2">Detail</th>
+                  <th className="p-2">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {currentItems.map((peserta, index) => (
-                  <tr key={index} className="hover:bg-blue-50 text-center">
-                    <td className="border border-gray-300 p-2 text-sm">
+                  <tr
+                    key={index}
+                    className={`${
+                      darkMode ? "hover:bg-gray-700" : "hover:bg-blue-50"
+                    }`}
+                  >
+                    <td className="p-2 text-sm">
                       {indexOfFirstItem + index + 1}
                     </td>
-                    <td className="p-2 border border-gray-300">
-                      {peserta.nama}
-                    </td>
-                    <td className="p-2 border border-gray-300">
-                      {peserta.nim}
-                    </td>
-                    <td className="p-2 border border-gray-300">
-                      {peserta.jurusan}
-                    </td>
-                    <td className="p-2 border border-gray-300">
+                    <td className="p-2">{peserta.nama}</td>
+                    <td className="p-2">{peserta.nim}</td>
+                    <td className="p-2">{peserta.jurusan}</td>
+                    <td className="p-2">
                       {peserta.unit_kerja || "Tidak Ditentukan"}
                     </td>
-                  
-                    <td className="p-2 border border-gray-300">
+                    <td className="p-2">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${
                           peserta.status_peserta === "Aktif"
-                            ? "bg-teal-100 text-teal-800"
+                            ? darkMode
+                              ? "bg-teal-900 text-teal-300"
+                              : "bg-teal-100 text-teal-800"
+                            : darkMode
+                            ? "bg-red-900 text-red-300"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
                         {peserta.status_peserta}
                       </span>
                     </td>
-                    <td className="p-2 border border-gray-300">
+                    <td className="p-2">
                       {peserta.status_peserta === "Aktif" ? (
                         <button
                           onClick={() =>
                             openConfirmDialog(peserta.id, peserta.nama)
                           }
                           disabled={loading[peserta.id]}
-                          className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium 
-              ${
-                loading[peserta.id]
-                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-              }`}
+                          className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
+                            loading[peserta.id]
+                              ? darkMode
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : "bg-gray-100 text-gray-500 cursor-not-allowed"
+                              : darkMode
+                              ? "bg-blue-900 text-blue-300 hover:bg-blue-800"
+                              : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          }`}
                         >
                           <Download className="w-4 h-4 mr-1" />
                           {loading[peserta.id] ? "Generating..." : "Generate"}
                         </button>
                       ) : (
-                        <span className="text-sm text-gray-500">Selesai</span>
+                        <span
+                          className={`text-sm ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}
+                        >
+                          Selesai
+                        </span>
                       )}
                     </td>
-                    <td className="p-2 border border-gray-300">
+                    <td className="p-2">
                       {peserta.status_sertifikat === "Selesai" && (
                         <button
                           onClick={() => handleDownload(peserta.id)}
-                          className="inline-flex items-center px-4 py-2 rounded-md text-sm font-semibold 
-        bg-gradient-to-r from-blue-500 to-blue-600 text-white 
-        hover:from-blue-600 hover:to-blue-700 
-        transform transition-all duration-200 hover:scale-105 
-        shadow-md hover:shadow-lg
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                          className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-semibold text-white transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+                            darkMode
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:ring-blue-400"
+                              : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:ring-blue-500"
+                          }`}
                         >
                           <Download className="w-4 h-4 mr-2 animate-bounce" />
                           <span></span>
                         </button>
                       )}
                     </td>
-                    <td className="p-6 border flex items-center justify-center space-x-4">
-                      <div
-                        className="p-2 rounded-lg bg-blue-100 cursor-pointer hover:bg-blue-50 transition-all duration-200"
-                        onClick={() => {
-                          setSelectedBiodata(peserta);
-                          setIsModalOpen(true);
-                        }}
-                      >
-                        <Info className="text-blue-500" />
+                    <td className="p-2">
+                      <div className="flex items-center justify-center space-x-4">
+                        <div
+                          className={`p-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                            darkMode
+                              ? "bg-blue-900 hover:bg-blue-800"
+                              : "bg-blue-100 hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            setSelectedBiodata(peserta);
+                            setIsModalOpen(true);
+                          }}
+                        >
+                          <Info
+                            className={`${
+                              darkMode ? "text-blue-300" : "text-blue-500"
+                            }`}
+                          />
+                        </div>
                       </div>
                     </td>
-                    <td className="p-2 border border-gray-300">
+                    <td className="p-2">
                       <button
                         onClick={() =>
                           openDeleteDialog(peserta.id, peserta.nama)
                         }
-                        className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium 
-      bg-red-100 text-red-700 hover:bg-red-200 transition-colors duration-200"
+                        className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 ${
+                          darkMode
+                            ? "bg-red-900 text-red-300 hover:bg-red-800"
+                            : "bg-red-100 text-red-700 hover:bg-red-200"
+                        }`}
                       >
                         <Trash2 className="w-6 h-6 mr-1" />
                       </button>
                     </td>
-                  
                   </tr>
                 ))}
               </tbody>
             </table>
+
             {/* Pagination Controls */}
-            <div className="mt-auto pt-4 border-t">
+            <div
+              className={`mt-auto pt-4 ${
+                darkMode ? "border-gray-700" : "border-gray-200"
+              } border-t`}
+            >
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={goToFirstPage}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`p-2 rounded-lg ${
+                    darkMode
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                   aria-label="First page"
                 >
                   <ChevronsLeft className="h-5 w-5" />
@@ -1587,7 +2083,11 @@ const ListPesertaMagang = () => {
                 <button
                   onClick={goToPreviousPage}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`p-2 rounded-lg ${
+                    darkMode
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -1608,8 +2108,12 @@ const ListPesertaMagang = () => {
                           onClick={() => paginate(pageNumber)}
                           className={`px-4 py-2 rounded-lg border ${
                             currentPage === pageNumber
-                              ? "bg-blue-600/90 text-white"
-                              : "hover:bg-gray-100"
+                              ? darkMode
+                                ? "bg-blue-600 text-white"
+                                : "bg-blue-600/90 text-white"
+                              : darkMode
+                              ? "bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600"
+                              : "hover:bg-gray-100 text-gray-600 border-gray-300"
                           }`}
                         >
                           {pageNumber}
@@ -1620,7 +2124,12 @@ const ListPesertaMagang = () => {
                       pageNumber === currentPage + 2
                     ) {
                       return (
-                        <span key={pageNumber} className="px-2 py-1">
+                        <span
+                          key={pageNumber}
+                          className={`px-2 py-1 ${
+                            darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
                           ...
                         </span>
                       );
@@ -1632,7 +2141,11 @@ const ListPesertaMagang = () => {
                 <button
                   onClick={goToNextPage}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`p-2 rounded-lg ${
+                    darkMode
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                   aria-label="Next page"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -1640,40 +2153,46 @@ const ListPesertaMagang = () => {
                 <button
                   onClick={goToLastPage}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`p-2 rounded-lg ${
+                    darkMode
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                   aria-label="Last page"
                 >
                   <ChevronsRight className="h-5 w-5" />
                 </button>
 
-                <span className="text-sm text-gray-600 ml-4">
+                <span
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  } ml-4`}
+                >
                   Halaman {currentPage} dari {totalPages}
                 </span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Di akhir return, sebelum penutup div terakhir */}
-      <BiodataModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedBiodata(null);
-        }}
-        biodata={selectedBiodata}
-      />
-      {isGenerating && <LoadingScreen />}
-      {isDownloading && <DownloadLoadingScreen />}
-      {/* Tambahkan di sini */}
-      <DeleteConfirmDialog
-        isOpen={deleteDialog.isOpen}
-        onClose={closeDeleteDialog}
-        onConfirm={handleDeletePeserta}
-        pesertaName={deleteDialog.pesertaName}
-      />
-      {isDeleting && <DeleteLoadingScreen />}
+        <BiodataModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedBiodata(null);
+          }}
+          biodata={selectedBiodata}
+        />
+        {isGenerating && <LoadingScreen />}
+        {isDownloading && <DownloadLoadingScreen />}
+        <DeleteConfirmDialog
+          isOpen={deleteDialog.isOpen}
+          onClose={closeDeleteDialog}
+          onConfirm={handleDeletePeserta}
+          pesertaName={deleteDialog.pesertaName}
+        />
+        {isDeleting && <DeleteLoadingScreen />}
+      </div>
     </div>
   );
 };

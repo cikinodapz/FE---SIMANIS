@@ -15,36 +15,26 @@ import { AlertCircle, CheckCircle2, Clock, TrendingUp, ClipboardList } from 'luc
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
-ChartJS.register(
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  LinearScale,
-  ChartDataLabels
-);
+ChartJS.register(ArcElement, Title, Tooltip, Legend, LinearScale, ChartDataLabels);
 
-const StatCard = ({ title, value, icon: Icon, description, colorClass, animate = true }) => (
+const StatCard = ({ title, value, icon: Icon, description, colorClass }) => (
   <motion.div
-    initial={animate ? { opacity: 0, y: 20 } : false}
-    animate={animate ? { opacity: 1, y: 0 } : false}
-    transition={{ duration: 0.5 }}
-    className="bg-white rounded-xl shadow-md p-4 sm:p-6 cursor-pointer transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-gray-50"
+    whileHover={{ scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
+    whileTap={{ scale: 0.98 }}
+    className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 bg-opacity-90 dark:bg-opacity-95 backdrop-blur-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300"
   >
     <div className="flex items-center justify-between">
-      <div>
-        <h3 className="text-base sm:text-lg font-semibold text-gray-700">{title}</h3>
-        <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-tight">{title}</h3>
+        <p className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
           {value}
         </p>
-        {description && (
-          <p className={`text-xs sm:text-sm mt-2 ${colorClass}`}>{description}</p>
-        )}
+        <p className={`text-sm ${colorClass} font-medium dark:text-opacity-90`}>{description}</p>
       </div>
-      <div className={`p-3 sm:p-4 rounded-full bg-gradient-to-br ${colorClass.includes('green') ? 'from-green-400 to-green-600' : 
-                                                           colorClass.includes('blue') ? 'from-blue-600 to-blue-400' : 
-                                                           'from-red-400 to-red-600'}`}>
-        <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+      <div className={`p-4 rounded-2xl bg-gradient-to-br ${colorClass.includes('green') ? 'from-emerald-500 to-teal-600' : 
+        colorClass.includes('blue') ? 'from-indigo-500 to-blue-600' : 'from-rose-500 to-pink-600'} 
+        shadow-md transform rotate-6`}>
+        <Icon className="w-8 h-8 text-white" />
       </div>
     </div>
   </motion.div>
@@ -54,93 +44,31 @@ const TugasStatistic = () => {
   const [statistic, setStatistic] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(false); // Default ke false (light mode)
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '75%',
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          padding: window.innerWidth < 768 ? 10 : 20,
-          usePointStyle: true,
-          font: {
-            size: window.innerWidth < 768 ? 10 : 12,
-            family: "'Poppins', sans-serif",
-            weight: '600'
-          },
-          generateLabels: (chart) => {
-            const datasets = chart.data.datasets[0];
-            return chart.data.labels.map((label, index) => ({
-              text: label,
-              fillStyle: datasets.backgroundColor[index],
-              strokeStyle: datasets.backgroundColor[index],
-              lineWidth: 0,
-              pointStyle: 'circle',
-              hidden: !chart.getDataVisibility(index),
-              index: index
-            }));
-          }
-        }
-      },
-      tooltip: {
-        enabled: true,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        titleColor: '#2D3748',
-        bodyColor: '#2D3748',
-        borderColor: '#E2E8F0',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 8,
-        usePointStyle: true,
-        callbacks: {
-          label: (context) => {
-            const value = context.raw;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = ((value / total) * 100).toFixed(1);
-            return ` ${context.label}: ${percentage}% (${value})`;
-          }
-        }
-      },
-      datalabels: {
-        color: '#FFFFFF',
-        font: {
-          weight: 'bold',
-          size: window.innerWidth < 768 ? 11 : 14,
-          family: "'Poppins', sans-serif"
-        },
-        formatter: (value, ctx) => {
-          const dataset = ctx.chart.data.datasets[0];
-          const sum = dataset.data.reduce((a, b) => a + b, 0);
-          const percentage = ((value / sum) * 100).toFixed(1) + '%';
-          return percentage;
-        },
-        anchor: 'center',
-        align: 'center',
-        offset: 0
-      }
-    },
-    elements: {
-      arc: {
-        borderWidth: 0,
-        borderRadius: 10,
-      }
-    },
-    animation: {
-      animateScale: true,
-      animateRotate: true,
-      duration: 2000,
-      easing: 'easeInOutQuart'
-    },
-    hover: {
-      mode: 'nearest',
-      intersect: true,
-      animationDuration: 200
-    }
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', newMode);
+      document.documentElement.classList.toggle('dark');
+      return newMode;
+    });
   };
 
   useEffect(() => {
+    // Pastikan light mode sebagai default saat halaman dimuat
+    const savedMode = localStorage.getItem('darkMode');
+    const isDark = savedMode === 'true'; // Hanya true jika eksplisit disimpan sebagai true
+    setDarkMode(isDark);
+
+    // Terapkan class 'dark' hanya jika savedMode adalah true
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark'); // Pastikan light mode default
+    }
+
     const fetchStatistic = async () => {
       try {
         const token = localStorage.getItem("accessToken");
@@ -152,70 +80,112 @@ const TugasStatistic = () => {
             },
           }
         );
-
-        if (response.data?.data) {
-          setStatistic(response.data.data);
-        }
+        setStatistic(response.data.data);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching statistic:", error);
-        setError("Gagal mengambil statistik tugas");
+        setError("Failed to load task statistics");
         setIsLoading(false);
       }
     };
-
     fetchStatistic();
   }, []);
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          padding: window.innerWidth < 768 ? 15 : 25,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          font: {
+            size: window.innerWidth < 768 ? 12 : 14,
+            family: "'Inter', sans-serif",
+            weight: '600'
+          },
+          color: darkMode ? '#E2E8F0' : '#2D3748', // Warna dinamis
+          boxWidth: 10,
+          boxHeight: 10,
+        }
+      },
+      tooltip: {
+        backgroundColor: darkMode ? 'rgba(45, 55, 72, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        titleColor: darkMode ? '#E2E8F0' : '#1A202C',
+        bodyColor: darkMode ? '#CBD5E0' : '#4A5568',
+        borderColor: darkMode ? '#4A5568' : '#E2E8F0',
+        borderWidth: 1,
+        cornerRadius: 8,
+        padding: 12,
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        usePointStyle: true,
+        callbacks: {
+          label: (context) => {
+            const value = context.raw;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value} (${percentage}%)`;
+          }
+        }
+      },
+      datalabels: {
+        color: '#FFFFFF',
+        font: {
+          weight: '700',
+          size: window.innerWidth < 768 ? 12 : 16,
+          family: "'Inter', sans-serif"
+        },
+        formatter: (value, ctx) => {
+          const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+          return value === 0 ? '' : `${((value / total) * 100).toFixed(1)}%`;
+        },
+        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+      }
+    },
+    elements: {
+      arc: {
+        borderWidth: 0,
+        borderRadius: 12,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+        shadowBlur: 10,
+        shadowColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+      }
+    },
+    animation: {
+      animateScale: true,
+      animateRotate: true,
+      duration: 1200,
+      easing: 'easeOutCubic'
+    }
+  };
+
   const getStatusData = useCallback(() => {
     if (!statistic) return null;
-    
-    const total = Object.values(statistic.status_summary).reduce((a, b) => a + b, 0);
     return {
-      labels: Object.keys(statistic.status_summary).map((label) => {
-        const value = statistic.status_summary[label];
-        const percentage = ((value / total) * 100).toFixed(1);
-        return `${label} (${percentage}%)`;
-      }),
+      labels: Object.keys(statistic.status_summary),
       datasets: [{
         data: Object.values(statistic.status_summary),
-        backgroundColor: [
-          'rgba(52, 211, 153, 0.95)',
-          'rgba(255, 99, 132, 0.95)',
-          'rgba(255, 205, 86, 0.95)',
-        ],
-        hoverBackgroundColor: [
-          'rgba(16, 185, 129, 1)',
-          'rgba(239, 68, 101, 1)',
-          'rgba(240, 180, 41, 1)',
-        ],
+        backgroundColor: ['#34D399', '#F87171', '#FBBF24'],
+        hoverBackgroundColor: ['#2DD4BF', '#FCA5A5', '#FCD34D'],
         borderWidth: 0,
+        shadowOffsetY: 6,
+        shadowBlur: 12,
       }]
     };
   }, [statistic]);
 
   const getDeadlineData = useCallback(() => {
     if (!statistic) return null;
-    
-    const total = statistic.deadline_summary.upcoming + statistic.deadline_summary.passed;
-    const upcomingPercentage = total === 0 ? 0 : ((statistic.deadline_summary.upcoming / total) * 100).toFixed(1);
-    const passedPercentage = total === 0 ? 0 : ((statistic.deadline_summary.passed / total) * 100).toFixed(1);
-    
     return {
-      labels: [
-        `Akan Datang (${upcomingPercentage}%)`,
-        `Telah Lewat (${passedPercentage}%)`
-      ],
+      labels: ['Upcoming', 'Overdue'],
       datasets: [{
         data: [statistic.deadline_summary.upcoming, statistic.deadline_summary.passed],
-        backgroundColor: [
-          'rgba(255, 205, 86, 0.95)',
-          'rgba(255, 99, 132, 0.95)',
-        ],
-        hoverBackgroundColor: [
-          'rgba(240, 180, 41, 1)',
-          'rgba(239, 68, 101, 1)',
-        ],
+        backgroundColor: ['#FBBF24', '#F87171'],
+        hoverBackgroundColor: ['#FCD34D', '#FCA5A5'],
         borderWidth: 0,
       }]
     };
@@ -223,28 +193,14 @@ const TugasStatistic = () => {
 
   const getCompletionData = useCallback(() => {
     if (!statistic) return null;
-    
     const completed = statistic.completion_rate.completed;
     const total = statistic.completion_rate.total;
-    const incomplete = total - completed;
-    const completedPercentage = total === 0 ? 0 : ((completed / total) * 100).toFixed(1);
-    const incompletePercentage = total === 0 ? 0 : ((incomplete / total) * 100).toFixed(1);
-    
     return {
-      labels: [
-        `Selesai (${completedPercentage}%)`,
-        `Belum Selesai (${incompletePercentage}%)`
-      ],
+      labels: ['Completed', 'Pending'],
       datasets: [{
-        data: [completed, incomplete],
-        backgroundColor: [
-          'rgba(52, 211, 153, 0.95)',
-          'rgba(255, 99, 132, 0.95)',
-        ],
-        hoverBackgroundColor: [
-          'rgba(16, 185, 129, 1)',
-          'rgba(239, 68, 101, 1)',
-        ],
+        data: [completed, total - completed],
+        backgroundColor: ['#34D399', '#F87171'],
+        hoverBackgroundColor: ['#2DD4BF', '#FCA5A5'],
         borderWidth: 0,
       }]
     };
@@ -252,22 +208,27 @@ const TugasStatistic = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="relative">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-          <div className="mt-4 text-gray-600 font-medium text-sm sm:text-base">Loading...</div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-t-indigo-600 border-gray-200 dark:border-t-indigo-400 dark:border-gray-700 rounded-full"
+        />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-50 p-4 sm:p-6 rounded-lg">
-          <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 text-center font-medium text-sm sm:text-base">{error}</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-red-100 dark:border-red-900"
+        >
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600 dark:text-rose-400 font-medium text-center">{error}</p>
+        </motion.div>
       </div>
     );
   }
@@ -277,87 +238,72 @@ const TugasStatistic = () => {
     : ((statistic.completion_rate.completed / statistic.completion_rate.total) * 100).toFixed(1);
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-900 transition-colors duration-300">
       <Sidebar />
       <div className="flex-1 md:ml-72">
-        <Navbar user="Guest" />
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="p-4 sm:p-8 lg:p-12 max-w-[95rem] mx-auto mt-20"
+        <Navbar user="Guest" toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+        <motion.main
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 lg:p-12 max-w-7xl mx-auto mt-20"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"
+          >
+            {/* Task Dashboard */}
+          </motion.h1>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             <StatCard
-              title="Tingkat Penyelesaian"
+              title="Completion Rate"
               value={`${completionRate}%`}
               icon={CheckCircle2}
-              description={`${statistic.completion_rate.completed} dari ${statistic.completion_rate.total} tugas`}
-              colorClass="text-blue-600"
+              description={`${statistic.completion_rate.completed}/${statistic.completion_rate.total} tasks`}
+              colorClass="text-emerald-600 dark:text-emerald-400"
             />
             <StatCard
-              title="Tugas Akan Datang"
+              title="Upcoming Tasks"
               value={statistic.deadline_summary.upcoming}
               icon={Clock}
-              description="Deadline belum terlewati"
-              colorClass="text-blue-600"
+              description="Due soon"
+              colorClass="text-indigo-600 dark:text-indigo-400"
             />
             <StatCard
-              title="Tugas Terlambat"
+              title="Overdue Tasks"
               value={statistic.deadline_summary.passed}
               icon={AlertCircle}
-              description="Deadline telah terlewati"
-              colorClass="text-blue-600"
+              description="Past deadline"
+              colorClass="text-rose-600 dark:text-rose-400"
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300"
-            >
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-green-500" />
-                Progress Overview
-              </h2>
-              <div className="h-[250px] sm:h-[300px] relative">
-                <Doughnut data={getCompletionData()} options={chartOptions} />
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300"
-            >
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-                <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500" />
-                Status Tugas
-              </h2>
-              <div className="h-[250px] sm:h-[300px] relative">
-                <Doughnut data={getStatusData()} options={chartOptions} />
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300"
-            >
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-500" />
-                Deadline Overview
-              </h2>
-              <div className="h-[250px] sm:h-[300px] relative">
-                <Doughnut data={getDeadlineData()} options={chartOptions} />
-              </div>
-            </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              { title: "Completion Progress", icon: TrendingUp, data: getCompletionData(), color: "text-emerald-500 dark:text-emerald-400" },
+              { title: "Task Status", icon: ClipboardList, data: getStatusData(), color: "text-amber-500 dark:text-amber-400" },
+              { title: "Deadline Status", icon: Clock, data: getDeadlineData(), color: "text-indigo-500 dark:text-indigo-400" },
+            ].map((chart, index) => (
+              <motion.div
+                key={chart.title}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.2 }}
+                whileHover={{ boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 bg-opacity-95 backdrop-blur-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300"
+              >
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6 flex items-center">
+                  <chart.icon className={`w-6 h-6 mr-2 ${chart.color}`} />
+                  {chart.title}
+                </h2>
+                <div className="h-[300px] relative">
+                  <Doughnut data={chart.data} options={chartOptions} />
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
+        </motion.main>
       </div>
     </div>
   );

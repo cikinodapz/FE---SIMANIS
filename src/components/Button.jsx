@@ -1,4 +1,4 @@
-import React from "react";
+  import React from "react";
 import { Plus } from 'lucide-react'; // Impor ikon Plus dari lucide-react
 
 const Button = ({ label, children, onClick, type = "button", className, variant = "green", ikon }) => {

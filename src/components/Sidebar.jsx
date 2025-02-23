@@ -21,6 +21,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { DarkModeContext } from "../context/DarkModeContext";
+import { useContext } from "react";
 
 const Sidebar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,6 +31,8 @@ const Sidebar = () => {
   const token = localStorage.getItem("accessToken");
   const decodedToken = token ? jwtDecode(token) : null;
   const userRole = decodedToken ? decodedToken.role : null;
+
+  const { darkMode } = useContext(DarkModeContext);
 
   const handleLogout = async () => {
     try {
@@ -113,8 +117,8 @@ const Sidebar = () => {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden md:block fixed top-28 left-4 h-screen w-72 flex flex-col pl-2 z-30 pb-32">
-        <div className="relative h-full backdrop-blur-md bg-white/30 rounded-[40px] shadow-2xl border border-white/20 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 to-purple-200/30 pointer-events-none rounded-[40px]" />
+        <div className={`relative h-full backdrop-blur-md ${darkMode ? 'bg-gray-900/40' : 'bg-white/30'} rounded-[40px] shadow-2xl border ${darkMode ? 'border-gray-800' : 'border-white/20'} overflow-hidden transition-colors duration-300`}>
+          <div className={`absolute inset-0 bg-gradient-to-br ${darkMode ? 'from-gray-800/30 to-blue-900/30' : 'from-blue-200/30 to-purple-200/30'} pointer-events-none rounded-[40px]`} />
 
           <div className="h-full overflow-y-auto p-6 mt-5 flex-grow relative z-10">
             <nav>
@@ -135,32 +139,28 @@ const Sidebar = () => {
                             navigate(item.route);
                           }
                         }}
-                        className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-500 ease-in-out
-                          relative overflow-hidden transform
+                        className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-500 ease-in-out relative overflow-hidden transform
                           ${
                             isActive
-                              ? "bg-blue-600/90 text-white shadow-lg shadow-blue-500/30 scale-105 border border-white/30"
-                              : "text-gray-700 hover:bg-white/80 hover:shadow-lg hover:scale-105 border border-transparent"
+                              ? `${darkMode ? 'bg-blue-700 text-white shadow-lg shadow-blue-600/30 border-blue-600/50' : 'bg-blue-600/90 text-white shadow-lg shadow-blue-500/30 border-white/30'} scale-105`
+                              : `${darkMode ? 'text-gray-300 hover:bg-gray-800/80 hover:shadow-lg hover:border-gray-700' : 'text-gray-700 hover:bg-white/80 hover:shadow-lg hover:border-blue-200/50'} border border-transparent`
                           }
                           before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent
                           before:translate-x-[-200%] before:transition-transform before:duration-700
-                          hover:before:translate-x-[200%] before:skew-x-12
-                          group-hover:border-blue-200/50`}
+                          hover:before:translate-x-[200%] before:skew-x-12`}
                       >
                         <Icon
                           className={`w-5 h-5 transition-all duration-500 ease-in-out
-                          ${isActive ? "rotate-6" : ""}
-                          group-hover:scale-110 group-hover:rotate-6
-                          ${!isActive && "group-hover:text-blue-600"}
-                        `}
+                            ${isActive ? "rotate-6" : ""}
+                            group-hover:scale-110 group-hover:rotate-6
+                            ${!isActive && (darkMode ? 'group-hover:text-blue-400' : 'group-hover:text-blue-600')}`}
                         />
                         <span
                           className={`font-medium transition-all duration-500
-                          ${
-                            !isActive &&
-                            "group-hover:text-blue-600 group-hover:translate-x-1"
-                          }
-                        `}
+                            ${
+                              !isActive &&
+                              (darkMode ? 'group-hover:text-blue-400 group-hover:translate-x-1' : 'group-hover:text-blue-600 group-hover:translate-x-1')
+                            }`}
                         >
                           {item.title}
                         </span>
@@ -177,13 +177,9 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={toggleMobileMenu}
-        className="md:hidden fixed top-24 right-4 z-50 p-2 rounded-lg bg-blue-600 text-white"
+        className={`md:hidden fixed top-24 right-4 z-50 p-2 rounded-lg ${darkMode ? 'bg-blue-700 dark:hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white transition-colors duration-300`}
       >
-        {isMobileMenuOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <Menu className="w-6 h-6" />
-        )}
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
       {/* Mobile Menu */}
@@ -193,7 +189,7 @@ const Sidebar = () => {
         }`}
       >
         <div
-          className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl transition-transform duration-300 transform ${
+          className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-3xl transition-transform duration-300 transform ${
             isMobileMenuOpen ? "translate-y-0" : "translate-y-full"
           }`}
         >
@@ -217,17 +213,14 @@ const Sidebar = () => {
                           }
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all
-                          ${
-                            isActive
-                              ? "bg-blue-600 text-white"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all ${
+                          isActive
+                            ? `${darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'}`
+                            : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
+                        }`}
                       >
                         <Icon className="w-6 h-6 mb-2" />
-                        <span className="text-xs text-center">
-                          {item.title}
-                        </span>
+                        <span className="text-xs text-center">{item.title}</span>
                       </a>
                     </li>
                   );
