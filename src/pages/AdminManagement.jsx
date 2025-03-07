@@ -60,7 +60,7 @@ const AdminManagement = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-allakun",
+        "https://web-baru.up.railway.app/admin/list-allakun",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -106,13 +106,13 @@ const AdminManagement = () => {
 
       if (editPegawai) {
         await axios.put(
-          `http://localhost:3000/admin/edit-akun/${editPegawai.id}`,
+          `https://web-baru.up.railway.app/admin/edit-akun/${editPegawai.id}`,
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
       } else {
         await axios.post(
-          "http://localhost:3000/admin/tambah-akun",
+          "https://web-baru.up.railway.app/admin/tambah-akun",
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -173,7 +173,7 @@ const AdminManagement = () => {
         try {
           const token = localStorage.getItem("accessToken");
           await axios.delete(
-            `http://localhost:3000/admin/hapus-akun/${id}`,
+            `https://web-baru.up.railway.app/admin/hapus-akun/${id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
 

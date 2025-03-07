@@ -13,7 +13,7 @@ const StatisticsSection = () => {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await fetch('http://localhost:3000/auth/publik-statistik');
+        const response = await fetch('https://web-baru.up.railway.app/auth/publik-statistik');
         if (!response.ok) {
           throw new Error('Failed to fetch statistics');
         }

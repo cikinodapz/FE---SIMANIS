@@ -37,7 +37,7 @@ const AdminLogbook = () => {
   const fetchLogbooks = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      let url = "http://localhost:3000/admin/all-logbooks?";
+      let url = "https://web-baru.up.railway.app/admin/all-logbooks?";
 
       if (selectedUnitKerja) url += `&unit_kerja=${selectedUnitKerja}`;
       if (dateRange.startDate) url += `&startDate=${dateRange.startDate}`;

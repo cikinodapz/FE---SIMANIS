@@ -25,13 +25,13 @@ const Navbar = ({ user }) => {
         let endpoint;
         switch (userRole) {
           case "Admin":
-            endpoint = "http://localhost:3000/admin/list-notif";
+            endpoint = "https://web-baru.up.railway.app/admin/list-notif";
             break;
           case "Pegawai":
-            endpoint = "http://localhost:3000/pegawai/list-notif";
+            endpoint = "https://web-baru.up.railway.app/pegawai/list-notif";
             break;
           case "User":
-            endpoint = "http://localhost:3000/peserta/notif-peserta";
+            endpoint = "https://web-baru.up.railway.app/peserta/notif-peserta";
             break;
           default:
             return;
@@ -61,7 +61,7 @@ const Navbar = ({ user }) => {
   const handleLogout = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/auth/logout",
+        "https://web-baru.up.railway.app/auth/logout",
         {},
         {
           withCredentials: true,
@@ -100,13 +100,13 @@ const Navbar = ({ user }) => {
         let endpoint = "";
         switch (userRole) {
           case "Admin":
-            endpoint = "http://localhost:3000/admin/profile";
+            endpoint = "https://web-baru.up.railway.app/admin/profile";
             break;
           case "Pegawai":
-            endpoint = "http://localhost:3000/pegawai/profile";
+            endpoint = "https://web-baru.up.railway.app/pegawai/profile";
             break;
           case "User":
-            endpoint = "http://localhost:3000/peserta/get-biodata";
+            endpoint = "https://web-baru.up.railway.app/peserta/get-biodata";
             break;
           default:
             return;
@@ -122,11 +122,11 @@ const Navbar = ({ user }) => {
         if (biodata.foto) {
           let fotoEndpoint;
           if (userRole === "Admin") {
-            fotoEndpoint = "http://localhost:3000/admin/get-foto-pegawai";
+            fotoEndpoint = "https://web-baru.up.railway.app/admin/get-foto-pegawai";
           } else if (userRole === "Pegawai") {
-            fotoEndpoint = "http://localhost:3000/pegawai/get-foto-pegawai";
+            fotoEndpoint = "https://web-baru.up.railway.app/pegawai/get-foto-pegawai";
           } else if (userRole === "User") {
-            fotoEndpoint = "http://localhost:3000/peserta/get-foto";
+            fotoEndpoint = "https://web-baru.up.railway.app/peserta/get-foto";
           } else {
             return;
           }

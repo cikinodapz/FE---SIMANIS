@@ -35,7 +35,7 @@ const PesertaNotification = () => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:3000/peserta/notif-peserta", {
+      const response = await axios.get("https://web-baru.up.railway.app/peserta/notif-peserta", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -54,7 +54,7 @@ const PesertaNotification = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.put(
-        `http://localhost:3000/peserta/mark-one/${notificationId}/read`,
+        `https://web-baru.up.railway.app/peserta/mark-one/${notificationId}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

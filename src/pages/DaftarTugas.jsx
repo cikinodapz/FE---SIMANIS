@@ -38,7 +38,7 @@ const DaftarTugas = () => {
   const fetchTasks = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:3000/peserta/my-tugas", {
+      const response = await axios.get("https://web-baru.up.railway.app/peserta/my-tugas", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data && response.data.data) {
@@ -154,7 +154,7 @@ const DaftarTugas = () => {
       setIsSubmitting(true);
       const token = localStorage.getItem("accessToken");
       await axios.put(
-        `http://localhost:3000/peserta/tugas-selesai/${selectedTask.id}`,
+        `https://web-baru.up.railway.app/peserta/tugas-selesai/${selectedTask.id}`,
         { catatan },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -30,7 +30,7 @@ const AdminNotifications = () => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:3000/admin/list-notif", {
+      const response = await axios.get("https://web-baru.up.railway.app/admin/list-notif", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,7 +51,7 @@ const AdminNotifications = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.put(
-        `http://localhost:3000/admin/mark-one/${notificationId}/read`,
+        `https://web-baru.up.railway.app/admin/mark-one/${notificationId}/read`,
         {},
         {
           headers: {

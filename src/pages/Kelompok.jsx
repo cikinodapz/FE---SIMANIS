@@ -56,7 +56,7 @@ const Kelompok = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-kelompok",
+        "https://web-baru.up.railway.app/admin/list-kelompok",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ const Kelompok = () => {
       console.log("Attempting to fetch document:", fileName);
 
       const response = await axios.get(
-        `http://localhost:3000/admin/preview-surat/${fileName}`,
+        `https://web-baru.up.railway.app/admin/preview-surat/${fileName}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -132,7 +132,7 @@ const Kelompok = () => {
       console.log("Attempting to download document:", fileName);
 
       const response = await axios.get(
-        `http://localhost:3000/admin/download-surat/${fileName}`,
+        `https://web-baru.up.railway.app/admin/download-surat/${fileName}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -202,7 +202,7 @@ const Kelompok = () => {
       try {
         const token = localStorage.getItem("accessToken");
         await axios.put(
-          `http://localhost:3000/admin/approve-user/${id}`,
+          `https://web-baru.up.railway.app/admin/approve-user/${id}`,
           {},
           {
             headers: {
@@ -285,7 +285,7 @@ const Kelompok = () => {
         try {
           const token = localStorage.getItem("accessToken");
           await axios.put(
-            `http://localhost:3000/admin/reject-user/${id}`,
+            `https://web-baru.up.railway.app/admin/reject-user/${id}`,
             {
               catatan: reasonResult.value,
             },
