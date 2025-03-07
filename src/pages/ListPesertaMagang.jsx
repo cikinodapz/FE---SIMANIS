@@ -90,7 +90,7 @@ const BiodataModal = ({ isOpen, onClose, biodata }) => {
         try {
           const token = localStorage.getItem("accessToken");
           const response = await axios.get(
-            `http://localhost:3000/admin/get-foto-peserta/${biodata.id}`,
+            `https://web-baru.up.railway.app/admin/get-foto-peserta/${biodata.id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -979,7 +979,7 @@ const ListPesertaMagang = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        let url = "http://localhost:3000/admin/list-biodata";
+        let url = "https://web-baru.up.railway.app/admin/list-biodata";
         const params = new URLSearchParams();
         if (statusFilter) params.append("status_peserta", statusFilter);
         if (unitKerjaFilter) params.append("unit_kerja", unitKerjaFilter);
@@ -1063,7 +1063,7 @@ const ListPesertaMagang = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const response = await axios.post(
-        `http://localhost:3000/admin/generate-sertifikat/${pesertaId}`,
+        `https://web-baru.up.railway.app/admin/generate-sertifikat/${pesertaId}`,
         {},
         {
           headers: {
@@ -1109,7 +1109,7 @@ const ListPesertaMagang = () => {
       });
 
       const updatedResponse = await axios.get(
-        "http://localhost:3000/admin/list-biodata",
+        "https://web-baru.up.railway.app/admin/list-biodata",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1337,7 +1337,7 @@ const ListPesertaMagang = () => {
       const token = localStorage.getItem("accessToken");
 
       await axios.delete(
-        `http://localhost:3000/admin/delete-peserta/${deleteDialog.pesertaId}`,
+        `https://web-baru.up.railway.app/admin/delete-peserta/${deleteDialog.pesertaId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1356,7 +1356,7 @@ const ListPesertaMagang = () => {
       });
 
       const response = await axios.get(
-        "http://localhost:3000/admin/list-biodata",
+        "https://web-baru.up.railway.app/admin/list-biodata",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -1541,7 +1541,7 @@ const ListPesertaMagang = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const response = await axios.get(
-        `http://localhost:3000/admin/download-sertifikat/${pesertaId}`,
+        `https://web-baru.up.railway.app/admin/download-sertifikat/${pesertaId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

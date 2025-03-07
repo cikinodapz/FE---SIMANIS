@@ -31,7 +31,7 @@ function Dashboard() {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        `http://localhost:3000/admin/unit-kerja-statistics?year=${year}`,
+        `https://web-baru.up.railway.app/admin/unit-kerja-statistics?year=${year}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

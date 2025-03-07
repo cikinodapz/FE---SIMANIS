@@ -35,7 +35,7 @@ const RegisterPesertaPage = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/peserta/peserta-register",
+        "https://web-baru.up.railway.app/peserta/peserta-register",
         {
           method: "POST",
           headers: {

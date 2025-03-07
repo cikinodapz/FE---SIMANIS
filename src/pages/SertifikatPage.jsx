@@ -377,7 +377,7 @@ const TemplateManagement = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.patch(
-        `http://localhost:3000/admin/choose-template/${templateId}`,
+        `https://web-baru.up.railway.app/admin/choose-template/${templateId}`,
         {},
         {
           headers: {
@@ -413,7 +413,7 @@ const TemplateManagement = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        `http://localhost:3000/admin/lihat-template/${templateId}`,
+        `https://web-baru.up.railway.app/admin/lihat-template/${templateId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -552,7 +552,7 @@ const TemplateManagement = () => {
         if (formValues.file) formDataToSend.append("file", formValues.file);
 
         await axios.patch(
-          `http://localhost:3000/admin/edit-template/${template.id}`,
+          `https://web-baru.up.railway.app/admin/edit-template/${template.id}`,
           formDataToSend,
           {
             headers: {
@@ -586,6 +586,7 @@ const TemplateManagement = () => {
     }
   };
 
+
   const handleDelete = async (template) => {
     try {
       const result = await Swal.fire({
@@ -604,7 +605,7 @@ const TemplateManagement = () => {
       if (result.isConfirmed) {
         const token = localStorage.getItem("accessToken");
         await axios.delete(
-          `http://localhost:3000/admin/delete-template/${template.id}`,
+          `https://web-baru.up.railway.app/admin/delete-template/${template.id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -633,6 +634,7 @@ const TemplateManagement = () => {
       });
     }
   };
+
 
   if (loading)
     return (

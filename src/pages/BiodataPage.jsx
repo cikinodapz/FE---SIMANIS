@@ -55,7 +55,7 @@ const BiodataPage = () => {
       try {
         const token = localStorage.getItem("accessToken");
         const response = await axios.get(
-          "http://localhost:3000/peserta/get-biodata",
+          "https://web-baru.up.railway.app/peserta/get-biodata",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -65,7 +65,7 @@ const BiodataPage = () => {
 
         if (biodata.foto) {
           const fotoResponse = await axios.get(
-            "http://localhost:3000/peserta/get-foto",
+            "https://web-baru.up.railway.app/peserta/get-foto",
             { headers: { Authorization: `Bearer ${token}` }, responseType: "blob" }
           );
           const fotoUrl = URL.createObjectURL(fotoResponse.data);
@@ -235,7 +235,7 @@ const BiodataPage = () => {
       if (foto) formDataToSend.append("foto", foto);
 
       await axios.put(
-        "http://localhost:3000/peserta/add-biodata",
+        "https://web-baru.up.railway.app/peserta/add-biodata",
         formDataToSend,
         {
           headers: {
