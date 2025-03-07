@@ -2,9 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import Button from "../components/Button";
 import { Plus, X, Edit2, Trash2, Eye, Check } from "lucide-react";
-import Input from "../components/Input";
 import { format } from "date-fns";
 import bps from "/assets/bps.png";
 import Swal from "sweetalert2";
@@ -27,7 +25,9 @@ const CardImage = ({
         isActive
           ? "bg-gradient-to-r from-blue-500 to-blue-600 p-1 shadow-lg hover:shadow-xl"
           : `${
-              darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              darkMode
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-200"
             } border shadow-sm hover:shadow-lg`
       }`}
     >
@@ -124,23 +124,254 @@ const CardImage = ({
 
 const TemplateManagement = () => {
   const { darkMode } = useContext(DarkModeContext);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-    nama: "",
-    file: null,
-  });
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStage, setUploadStage] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewContent, setPreviewContent] = useState(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewContent, setPreviewContent] = useState(null);
 
   useEffect(() => {
     fetchTemplates();
   }, []);
+
+  const fetchTemplates = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        "http://localhost:3000/admin/list-template",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data && response.data.templates) {
+        setTemplates(response.data.templates);
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error fetching templates");
+      setLoading(false);
+      console.error("Error fetching templates:", err);
+    }
+  };
+
+  const handleAddTemplate = async () => {
+    // Create custom styles for the Swal modal
+    const customStyles = `
+      <style>
+        .add-template-popup .swal2-input,
+        .add-template-popup .swal2-file {
+          width: 90%;
+          margin: 0.75em auto;
+          font-size: 1.1em;
+          padding: 0.75em;
+          ${darkMode ? "background: #374151; color: #e5e7eb;" : ""}
+        }
+        .add-template-popup .template-form-group {
+          margin: 1.5em 0;
+          text-align: left;
+          padding: 0 1em;
+        }
+        .add-template-popup .template-form-label {
+          display: block;
+          margin-bottom: 0.5em;
+          font-weight: 600;
+          color: ${darkMode ? "#d1d5db" : "#374151"};
+          font-size: 0.95em;
+        }
+        .add-template-popup .template-file-container {
+          border: 2px dashed ${darkMode ? "#4b5563" : "#d1d5db"};
+          border-radius: 0.5em;
+          padding: 1.5em;
+          margin-top: 0.5em;
+          background: ${darkMode ? "#374151" : "#f9fafb"};
+          transition: all 0.3s ease;
+        }
+        .add-template-popup .template-file-container:hover {
+          border-color: ${darkMode ? "#60a5fa" : "#3085d6"};
+          background: ${darkMode ? "#4b5563" : "#f3f4f6"};
+        }
+        .add-template-popup .template-file-description {
+          margin-top: 0.75em;
+          font-size: 0.85em;
+          color: ${darkMode ? "#9ca3af" : "#6b7280"};
+        }
+        .swal2-confirm, .swal2-cancel {
+          padding: 0.75em 2em !important;
+          font-size: 1em !important;
+        }
+      </style>
+    `;
+
+    try {
+      // Step 1: Show the form to collect template data
+      const { value: formValues, isDismissed } = await Swal.fire({
+        title: "Tambah Template",
+        html: `
+          ${customStyles}
+          <div class="template-form-group">
+            <label class="template-form-label">Nama Template</label>
+            <input 
+              id="swal-input-nama" 
+              class="swal2-input" 
+              placeholder="Masukkan nama template"
+            >
+          </div>
+          <div class="template-form-group">
+            <label class="template-form-label">File Template</label>
+            <div class="template-file-container">
+              <input 
+                id="swal-input-file" 
+                class="swal2-file" 
+                type="file"
+                accept=".docx"
+              >
+              <p class="template-file-description">
+                Format yang didukung: .docx
+              </p>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Tambah Template",
+        cancelButtonText: "Batal",
+        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
+        cancelButtonColor: darkMode ? "#dc2626" : "#dc2626",
+        customClass: { popup: "add-template-popup" },
+        background: darkMode ? "#1f2937" : "#fff",
+        width: "550px",
+        focusConfirm: false,
+        preConfirm: () => {
+          const nama = document.getElementById("swal-input-nama").value;
+          const file = document.getElementById("swal-input-file").files[0];
+          
+          if (!nama?.trim()) {
+            Swal.showValidationMessage("Nama template harus diisi");
+            return false;
+          }
+          if (!file) {
+            Swal.showValidationMessage("File template harus diupload");
+            return false;
+          }
+          return { nama: nama.trim(), file };
+        },
+      });
+
+      // If user cancels or dismisses the form, stop here
+      if (isDismissed || !formValues) return;
+
+      // Step 2: Show upload progress dialog
+      Swal.fire({
+        title: "Mengupload Template...",
+        html: `
+          <div class="space-y-2">
+            <div class="h-2 rounded-full overflow-hidden ${
+              darkMode ? "bg-gray-600" : "bg-gray-200"
+            }">
+              <div id="progress-bar" class="h-full ${
+                darkMode ? "bg-blue-500" : "bg-blue-600"
+              } rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-sm ${
+              darkMode ? "text-gray-400" : "text-gray-600"
+            }">
+              <span id="progress-text">Memulai upload...</span>
+              <span id="progress-percentage">0%</span>
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        willOpen: () => {
+          Swal.showLoading();
+        },
+        didOpen: async () => {
+          try {
+            // Prepare form data
+            const token = localStorage.getItem("accessToken");
+            const formDataToSend = new FormData();
+            formDataToSend.append("nama", formValues.nama);
+            formDataToSend.append("file", formValues.file);
+
+            // Update progress bar utility function
+            const updateProgress = (progress) => {
+              const progressBar = Swal.getHtmlContainer().querySelector("#progress-bar");
+              const progressText = Swal.getHtmlContainer().querySelector("#progress-text");
+              const progressPercentage = Swal.getHtmlContainer().querySelector("#progress-percentage");
+              
+              if (progressBar) progressBar.style.width = `${progress}%`;
+              if (progressPercentage) progressPercentage.textContent = `${progress}%`;
+              
+              if (progress < 30) {
+                if (progressText) progressText.textContent = "Memulai upload...";
+              } else if (progress < 60) {
+                if (progressText) progressText.textContent = "Mengupload file...";
+              } else if (progress < 80) {
+                if (progressText) progressText.textContent = "Memproses template...";
+              } else {
+                if (progressText) progressText.textContent = "Menyelesaikan...";
+              }
+            };
+
+            // Make the actual API request
+            const response = await axios.post(
+              "http://localhost:3000/admin/upload-template",
+              formDataToSend,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent) => {
+                  const progress = Math.round(
+                    (progressEvent.loaded * 70) / progressEvent.total
+                  );
+                  updateProgress(Math.min(70, progress));
+                },
+              }
+            );
+
+            // Simulate final processing
+            for (let i = 71; i <= 100; i += 5) {
+              updateProgress(i);
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Close the progress dialog
+            Swal.close();
+
+            // Show success message
+            await Swal.fire({
+              icon: "success",
+              title: "Berhasil!",
+              text: "Template berhasil ditambahkan",
+              timer: 1500,
+              showConfirmButton: false,
+              background: darkMode ? "#1f2937" : "#fff",
+              confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
+            });
+
+            // Refresh the templates list
+            await fetchTemplates();
+          } catch (err) {
+            console.error("Error adding template:", err);
+            Swal.close();
+            
+            // Show error message
+            await Swal.fire({
+              icon: "error",
+              title: "Gagal!",
+              text: err.response?.data?.message || "Gagal menambahkan template",
+              background: darkMode ? "#1f2937" : "#fff",
+              confirmButtonColor: darkMode ? "#dc2626" : "#d33",
+            });
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error in handleAddTemplate:", error);
+    }
+  };
 
   const handleApplyTemplate = async (templateId) => {
     try {
@@ -355,27 +586,6 @@ const TemplateManagement = () => {
     }
   };
 
-  const fetchTemplates = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get(
-        "http://localhost:3000/admin/list-template",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response.data && response.data.templates) {
-        setTemplates(response.data.templates);
-      }
-      setLoading(false);
-    } catch (err) {
-      setError(err.response?.data?.message || "Error fetching templates");
-      setLoading(false);
-      console.error("Error fetching templates:", err);
-    }
-  };
-
   const handleDelete = async (template) => {
     try {
       const result = await Swal.fire({
@@ -424,86 +634,6 @@ const TemplateManagement = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      file: e.target.files[0],
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsUploading(true);
-    setUploadProgress(0);
-    setUploadStage("Memulai upload...");
-
-    const formDataToSend = new FormData();
-    formDataToSend.append("nama", formData.nama);
-    formDataToSend.append("file", formData.file);
-
-    try {
-      const token = localStorage.getItem("accessToken");
-
-      const updateProgress = (progress, stage) => {
-        setUploadProgress(progress);
-        setUploadStage(stage);
-      };
-
-      updateProgress(20, "Mengupload file...");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const response = await axios.post(
-        "http://localhost:3000/admin/upload-template",
-        formDataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            const progress =
-              Math.round((progressEvent.loaded * 30) / progressEvent.total) + 20;
-            updateProgress(progress, "Mengupload file...");
-          },
-        }
-      );
-
-      updateProgress(60, "Mengkonversi file ke PDF...");
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      updateProgress(80, "Membuat preview...");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      updateProgress(100, "Selesai!");
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      await fetchTemplates();
-      setIsPopupVisible(false);
-      setFormData({ nama: "", file: null });
-      setIsUploading(false);
-
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil!",
-        text: "Template berhasil ditambahkan.",
-        timer: 1500,
-        showConfirmButton: false,
-        background: darkMode ? "#1f2937" : "#fff",
-        confirmButtonColor: darkMode ? "#2563eb" : "#3085d6",
-      });
-    } catch (err) {
-      console.error("Error adding template:", err);
-      setIsUploading(false);
-      Swal.fire({
-        icon: "error",
-        title: "Error!",
-        text: err.response?.data?.message || "Gagal menambahkan template",
-        background: darkMode ? "#1f2937" : "#fff",
-        confirmButtonColor: darkMode ? "#dc2626" : "#d33",
-      });
-    }
-  };
-
   if (loading)
     return (
       <div
@@ -544,7 +674,9 @@ const TemplateManagement = () => {
         <div className="p-8 lg:p-12 mt-20 max-w-7xl mx-auto">
           <div
             className={`shadow-lg p-6 ${
-              darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+              darkMode
+                ? "bg-gray-800 border-gray-700"
+                : "bg-white border-gray-100"
             } rounded-2xl bg-opacity-95 dark:bg-opacity-95 backdrop-blur-sm border transition-colors duration-300`}
           >
             <div className="flex justify-between items-center mb-6">
@@ -565,7 +697,7 @@ const TemplateManagement = () => {
                 </p>
               </div>
               <button
-                onClick={() => setIsPopupVisible(true)}
+                onClick={handleAddTemplate}
                 className={`inline-flex items-center gap-2 px-4 py-2 ${
                   darkMode
                     ? "bg-blue-500 hover:bg-blue-600"
@@ -604,7 +736,10 @@ const TemplateManagement = () => {
                             } mb-2`}
                           >
                             Created:{" "}
-                            {format(new Date(template.createdAt), "dd MMM yyyy")}
+                            {format(
+                              new Date(template.createdAt),
+                              "dd MMM yyyy"
+                            )}
                           </p>
                         </div>
                       </div>
@@ -622,122 +757,8 @@ const TemplateManagement = () => {
         </div>
       </div>
 
-      {isPopupVisible && (
-        <div
-          className={`fixed inset-0 ${
-            darkMode ? "bg-black/70" : "bg-black/50"
-          } flex justify-center items-center z-50`}
-        >
-          <div
-            className={`p-6 rounded-lg shadow-lg w-full max-w-md ${
-              darkMode ? "bg-gray-800" : "bg-white"
-            }`}
-          >
-            <div
-              className={`flex justify-between items-center mb-6 ${
-                darkMode ? "text-gray-200" : "text-gray-800"
-              }`}
-            >
-              <h2 className="text-2xl font-semibold">Tambah Template</h2>
-              <button
-                onClick={() => setIsPopupVisible(false)}
-                className={`${
-                  darkMode
-                    ? "text-gray-400 hover:text-gray-200"
-                    : "text-gray-500 hover:text-gray-700"
-                } transition-colors`}
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label
-                  className={`block mb-2 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Nama Template
-                </label>
-                <Input
-                  type="text"
-                  value={formData.nama}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, nama: e.target.value }))
-                  }
-                  required
-                  className={`w-full ${
-                    darkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-800"
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label
-                  className={`block mb-2 ${
-                    darkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Upload File (.docx)
-                </label>
-                <Input
-                  type="file"
-                  accept=".docx"
-                  onChange={handleFileChange}
-                  required
-                  className={`w-full ${
-                    darkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-800"
-                  }`}
-                />
-              </div>
-
-              {isUploading && (
-                <div className="space-y-2">
-                  <div
-                    className={`h-2 rounded-full overflow-hidden ${
-                      darkMode ? "bg-gray-600" : "bg-gray-200"
-                    }`}
-                  >
-                    <div
-                      className={`h-full ${
-                        darkMode ? "bg-blue-500" : "bg-blue-600"
-                      } rounded-full transition-all duration-300 ease-out`}
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <div
-                    className={`flex justify-between text-sm ${
-                      darkMode ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    <span>{uploadStage}</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end space-x-3">
-                <Button
-                  label="Cancel"
-                  variant="white"
-                  onClick={() => setIsPopupVisible(false)}
-                  disabled={isUploading}
-                  className={darkMode ? "bg-gray-700 text-gray-200 hover:bg-gray-600" : ""}
-                />
-                <Button
-                  label={isUploading ? "Uploading..." : "Submit"}
-                  variant="blue"
-                  type="submit"
-                  disabled={isUploading}
-                  className={darkMode ? "bg-blue-500 hover:bg-blue-600" : ""}
-                />
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+      
+    
       {isPreviewModalOpen && (
         <div
           className={`fixed inset-0 ${
