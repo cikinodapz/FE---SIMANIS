@@ -81,7 +81,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/pegawai/list-peserta",
+        "https://web-baru.up.railway.app/pegawai/list-peserta",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/pegawai/list-tugas",
+        "https://web-baru.up.railway.app/pegawai/list-tugas",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -155,7 +155,7 @@ const FormTugas = () => {
 
       if (isEdit) {
         await axios.put(
-          `http://localhost:3000/pegawai/edit-tugas/${editTugasId}`,
+          `https://web-baru.up.railway.app/pegawai/edit-tugas/${editTugasId}`,
           tugasData,
           {
             headers: {
@@ -182,7 +182,7 @@ const FormTugas = () => {
         }
 
         await axios.post(
-          `http://localhost:3000/pegawai/add-tugas/${selectedPesertaId}`,
+          `https://web-baru.up.railway.app/pegawai/add-tugas/${selectedPesertaId}`,
           tugasData,
           {
             headers: {
@@ -239,7 +239,7 @@ const FormTugas = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("accessToken");
-          await axios.delete(`http://localhost:3000/pegawai/delete-tugas/${id}`, {
+          await axios.delete(`https://web-baru.up.railway.app/pegawai/delete-tugas/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

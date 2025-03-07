@@ -22,7 +22,7 @@ const Profile = () => {
     const fetchInitialData = async () => {
       try {
         const profileResponse = await axios.get(
-          "http://localhost:3000/peserta/profile",
+          "https://web-baru.up.railway.app/peserta/profile",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -30,7 +30,7 @@ const Profile = () => {
           setPesertaData(profileResponse.data.data);
           if (profileResponse.data.data.foto) {
             const photoResponse = await axios.get(
-              "http://localhost:3000/peserta/get-foto",
+              "https://web-baru.up.railway.app/peserta/get-foto",
               { headers: { Authorization: `Bearer ${token}` }, responseType: "blob" }
             );
             setPreview(URL.createObjectURL(photoResponse.data));
@@ -70,7 +70,7 @@ const Profile = () => {
     formData.append("foto", selectedFile);
 
     try {
-      await axios.put("http://localhost:3000/peserta/update-photo", formData, {
+      await axios.put("https://web-baru.up.railway.app/peserta/update-photo", formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
       Swal.fire({ icon: "success", title: "Berhasil", text: "Foto profil berhasil diperbarui", timer: 1500, showConfirmButton: false });

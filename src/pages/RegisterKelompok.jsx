@@ -105,7 +105,7 @@ const RegisterKelompok = () => {
       formDataToSend.append("surat_balasan", files.surat_balasan);
 
       const response = await axios.post(
-        "http://localhost:3000/peserta/group-register",
+        "https://web-baru.up.railway.app/peserta/group-register",
         formDataToSend,
         {
           headers: {

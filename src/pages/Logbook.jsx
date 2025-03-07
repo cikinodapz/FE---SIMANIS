@@ -44,7 +44,7 @@ const Logbook = () => {
   const fetchLogbooks = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://localhost:3000/peserta/my-logbook", {
+      const response = await axios.get("https://web-baru.up.railway.app/peserta/my-logbook", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -70,8 +70,8 @@ const Logbook = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const url = currentLogbook
-        ? `http://localhost:3000/peserta/edit-logbook/${currentLogbook.id}`
-        : "http://localhost:3000/peserta/add-logbook";
+        ? `https://web-baru.up.railway.app/peserta/edit-logbook/${currentLogbook.id}`
+        : "https://web-baru.up.railway.app/peserta/add-logbook";
       const method = currentLogbook ? "put" : "post";
 
       await axios[method](url, formData, {
@@ -114,7 +114,7 @@ const Logbook = () => {
     if (result.isConfirmed) {
       try {
         const token = localStorage.getItem("accessToken");
-        await axios.delete(`http://localhost:3000/peserta/delete-logbook/${id}`, {
+        await axios.delete(`https://web-baru.up.railway.app/peserta/delete-logbook/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

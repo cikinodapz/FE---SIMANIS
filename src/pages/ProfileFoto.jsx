@@ -27,7 +27,7 @@ const ProfilePegawai = () => {
         const token = localStorage.getItem("accessToken");
 
         const profileResponse = await axios.get(
-          `http://localhost:3000${baseUrl}/profile`,
+          `https://web-baru.up.railway.app${baseUrl}/profile`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -38,7 +38,7 @@ const ProfilePegawai = () => {
 
           if (profileResponse.data.data.foto) {
             const photoResponse = await axios.get(
-              `http://localhost:3000${baseUrl}/get-foto-pegawai`,
+              `https://web-baru.up.railway.app${baseUrl}/get-foto-pegawai`,
               {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: "blob",
@@ -103,7 +103,7 @@ const ProfilePegawai = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.put(`http://localhost:3000${baseUrl}/update-photo`, formData, {
+      await axios.put(`https://web-baru.up.railway.app${baseUrl}/update-photo`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

@@ -34,7 +34,7 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/auth/login",
+        "https://web-baru.up.railway.app/auth/login",
         formData,
         {
           headers: {
@@ -168,7 +168,7 @@ const LoginPage = () => {
         allowOutsideClick: false,
       });
 
-      await axios.post("http://localhost:3000/auth/send-otp", {
+      await axios.post("https://web-baru.up.railway.app/auth/send-otp", {
         email: resetEmail,
       });
 
@@ -231,7 +231,7 @@ const LoginPage = () => {
         allowOutsideClick: false,
       });
 
-      await axios.post("http://localhost:3000/auth/lupa-password", {
+      await axios.post("https://web-baru.up.railway.app/auth/lupa-password", {
         kode: otp,
         newPassword,
       });

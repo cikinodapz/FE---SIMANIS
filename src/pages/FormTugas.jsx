@@ -123,7 +123,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-peserta",
+        "https://web-baru.up.railway.app/admin/list-peserta",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -143,7 +143,7 @@ const FormTugas = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/admin/list-tugas",
+        "https://web-baru.up.railway.app/admin/list-tugas",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -197,7 +197,7 @@ const FormTugas = () => {
 
       if (isEdit) {
         await axios.put(
-          `http://localhost:3000/admin/edit-tugas/${editTugasId}`,
+          `https://web-baru.up.railway.app/admin/edit-tugas/${editTugasId}`,
           tugasData,
           {
             headers: {
@@ -228,7 +228,7 @@ const FormTugas = () => {
         }
 
         await axios.post(
-          `http://localhost:3000/admin/add-tugas/${selectedPesertaId}`,
+          `https://web-baru.up.railway.app/admin/add-tugas/${selectedPesertaId}`,
           tugasData,
           {
             headers: {
@@ -296,7 +296,7 @@ const FormTugas = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("accessToken");
-          await axios.delete(`http://localhost:3000/admin/delete-tugas/${id}`, {
+          await axios.delete(`https://web-baru.up.railway.app/admin/delete-tugas/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

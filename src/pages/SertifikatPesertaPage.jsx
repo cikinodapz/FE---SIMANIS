@@ -23,7 +23,7 @@ const SertifikatPeserta = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/peserta/preview-sertif",
+        "https://web-baru.up.railway.app/peserta/preview-sertif",
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",
@@ -63,7 +63,7 @@ const SertifikatPeserta = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.get(
-        "http://localhost:3000/peserta/preview-sertif",
+        "https://web-baru.up.railway.app/peserta/preview-sertif",
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob",

@@ -73,7 +73,7 @@ const TugasStatistic = () => {
       try {
         const token = localStorage.getItem("accessToken");
         const response = await axios.get(
-          "http://localhost:3000/peserta/statistik-tugas",
+          "https://web-baru.up.railway.app/peserta/statistik-tugas",
           {
             headers: {
               Authorization: `Bearer ${token}`,
